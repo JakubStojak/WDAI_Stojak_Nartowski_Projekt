@@ -38,6 +38,12 @@ const HomeContainer = styled(Stack)(({ theme }) => ({
   },
 }));
 
+const categoryMap: Record<string, string> = {
+  Piękno: "beauty",
+  Meble: "furniture",
+  Żywność: "groceries",
+};
+
 const ProductCard = styled(MuiCard)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
@@ -80,7 +86,7 @@ function Home() {
     fetchProduct();
   }, [id]);
 
-  const categories = ["Kosmetyki", "Perfumy", "Meble", "Jedzenie"];
+  const categories = ["Piękno", "Meble", "Żywność"];
 
   if (loading)
     return (
@@ -196,21 +202,21 @@ function Home() {
         >
           Kategorie:
         </Typography>
-        <Grid container spacing={2} justifyContent="center">
-          {categories.map((cat, index) => (
-            <Grid size={{ xs: 6, sm: 3 }} key={index}>
+        <Grid container spacing={2} justifyContent="center" sx={{ mt: 2 }}>
+          {categories.map((catName, index) => (
+            <Grid key={index} size={{ xs: 12, sm: 4 }}>
               <Button
                 variant="outlined"
                 fullWidth
                 component={Link}
-                to="/products"
+                to={`/products/${catName}`}
                 sx={{
                   height: 50,
-                  backgroundColor: "white",
-                  "&:hover": { backgroundColor: "#f0f0f0" },
+                  bgcolor: "white",
+                  "&:hover": { bgcolor: "#f5f5f5" },
                 }}
               >
-                {cat}
+                {catName}
               </Button>
             </Grid>
           ))}

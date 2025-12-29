@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import {
   Container,
   Typography,
@@ -14,6 +14,29 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
+
+interface Product {
+  id: number;
+  title: string;
+  description: string;
+  category: string;
+  price: number;
+  thumbnail: string;
+  reviews: Review[];
+}
+
+interface Review {
+  rating: number;
+  comment: string;
+  date: string;
+  reviewerName: string;
+}
+
+const categoryMap: Record<string, string> = {
+  "Piękno": "beauty",
+  "Meble": "furniture",
+  "Żywność": "groceries",
+};
 
 const ProductsPageContainer = styled(Stack)(({ theme }) => ({
   minHeight: "100vh",
@@ -37,6 +60,14 @@ const ProductsPageContainer = styled(Stack)(({ theme }) => ({
   },
 }));
 
+const addToCart = (product: Product) => {
+  const existingCart = localStorage.getItem("cart");
+  const cart: Product[] = existingCart ? JSON.parse(existingCart) : [];
+  const updatedCart = [...cart, product];
+  localStorage.setItem("cart", JSON.stringify(updatedCart));
+  alert("Dodano do koszyka!");
+};
+
 const ProductCard = styled(Card)(({ theme }) => ({
   height: "100%",
   display: "flex",
@@ -45,20 +76,17 @@ const ProductCard = styled(Card)(({ theme }) => ({
   backgroundColor: theme.palette.background.paper,
   boxShadow: "rgba(149, 157, 165, 0.2) 0px 8px 24px",
   transition: "transform 0.2s ease-in-out",
-  "&:hover": {
-    transform: "translateY(-5px)",
-  },
-  ...theme.applyStyles("dark", {
-    boxShadow: "rgba(0, 0, 0, 0.5) 0px 8px 24px",
-  }),
+  "&:hover": { transform: "translateY(-5px)" },
+  ...theme.applyStyles("dark", { boxShadow: "rgba(0, 0, 0, 0.5) 0px 8px 24px" }),
 }));
 
 function Products() {
-  const [products, setProducts] = useState<any[]>([]);
+  const { cat } = useParams<{ cat: string }>();
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("https://dummyjson.com/products")
+    fetch("https://dummyjson.com/products?limit=100")
       .then((res) => res.json())
       .then((data) => {
         setProducts(data.products);
@@ -78,23 +106,57 @@ function Products() {
     );
   }
 
+  const filteredProducts = products.filter((p) => {
+    if (!cat) return true;
+    const englishCat = categoryMap[cat as keyof typeof categoryMap];
+    const finalTarget = (englishCat || cat).toLowerCase();
+    return p.category.toLowerCase() === finalTarget;
+  });
+
   return (
     <ProductsPageContainer>
       <Container maxWidth="lg">
         <Box sx={{ mb: 5, textAlign: "center" }}>
-          <Typography
-            variant="h3"
-            component="h1"
-            fontWeight="bold"
-            color="primary"
-            gutterBottom
-          >
+          <Typography variant="h3" fontWeight="bold" color="primary" gutterBottom>
             Nasze Produkty 🛍️
           </Typography>
+
+          {cat !== undefined ? (
+            <Box>
+              <Typography variant="h5" sx={{ mb: 2 }}>
+                Kategoria: <strong>{cat}</strong>
+              </Typography>
+              <Button
+                variant="text"
+                component={Link}
+                to="/products"
+                color="secondary"
+                sx={{ fontWeight: "bold" }}
+              >
+                ← Wróć do wszystkich kategorii
+              </Button>
+            </Box>
+          ) : (
+            <Grid container spacing={2} justifyContent="center" sx={{ mt: 2 }}>
+              {["Piękno", "Meble", "Żywność"].map((catName, index) => (
+                <Grid key={index} size={{ xs: 12, sm: 4 }}>
+                  <Button
+                    variant="outlined"
+                    fullWidth
+                    component={Link}
+                    to={`/products/${catName}`}
+                    sx={{ height: 50, bgcolor: "white", "&:hover": { bgcolor: "#f5f5f5" } }}
+                  >
+                    {catName}
+                  </Button>
+                </Grid>
+              ))}
+            </Grid>
+          )}
         </Box>
 
         <Grid container spacing={4}>
-          {products.map((product) => (
+          {filteredProducts.map((product) => (
             <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={product.id}>
               <ProductCard variant="outlined">
                 <CardMedia
@@ -104,15 +166,8 @@ function Products() {
                   alt={product.title}
                   sx={{ objectFit: "contain", p: 2, bgcolor: "transparent" }}
                 />
-
                 <CardContent sx={{ flexGrow: 1 }}>
-                  <Typography
-                    gutterBottom
-                    variant="h6"
-                    component="div"
-                    fontWeight="bold"
-                    noWrap
-                  >
+                  <Typography gutterBottom variant="h6" fontWeight="bold" noWrap>
                     {product.title}
                   </Typography>
                   <Typography
@@ -127,15 +182,10 @@ function Products() {
                   >
                     {product.description}
                   </Typography>
-                  <Typography
-                    variant="h6"
-                    color="secondary"
-                    sx={{ mt: 2, fontWeight: "bold" }}
-                  >
+                  <Typography variant="h6" color="secondary" sx={{ mt: 2, fontWeight: "bold" }}>
                     {product.price} $
                   </Typography>
                 </CardContent>
-
                 <CardActions sx={{ p: 2, pt: 0 }}>
                   <Button
                     variant="contained"
@@ -144,6 +194,9 @@ function Products() {
                     to={`/productdetails/${product.id}`}
                   >
                     Szczegóły
+                  </Button>
+                  <Button fullWidth variant="contained" onClick={() => addToCart(product)}>
+                    Dodaj
                   </Button>
                 </CardActions>
               </ProductCard>
