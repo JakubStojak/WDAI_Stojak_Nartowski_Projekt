@@ -1,134 +1,158 @@
 import { useState, useEffect } from "react";
-import { Button } from "@mui/material";
 import { Link } from "react-router-dom";
+import {
+  Container,
+  Typography,
+  Button,
+  Grid,
+  Box,
+  Stack,
+  Card,
+  CardContent,
+  CardMedia,
+  CardActions,
+  CircularProgress,
+} from "@mui/material";
+import { styled } from "@mui/material/styles";
 
-interface Review {
-  rating: number;
-  comment: string;
-  date: string;
-  reviewerName: string;
-}
+const ProductsPageContainer = styled(Stack)(({ theme }) => ({
+  minHeight: "100vh",
+  padding: theme.spacing(2),
+  [theme.breakpoints.up("sm")]: {
+    padding: theme.spacing(4),
+  },
+  "&::before": {
+    content: '""',
+    display: "block",
+    position: "absolute",
+    zIndex: -1,
+    inset: 0,
+    backgroundImage:
+      "radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))",
+    backgroundRepeat: "no-repeat",
+    ...theme.applyStyles("dark", {
+      backgroundImage:
+        "radial-gradient(at 50% 50%, hsla(210, 100%, 16%, 0.5), hsl(220, 30%, 5%))",
+    }),
+  },
+}));
 
-interface Product {
-  id: number;
-  title: string;
-  description: string;
-  price: number;
-  thumbnail: string;
-  reviews: Review[];
-}
+const ProductCard = styled(Card)(({ theme }) => ({
+  height: "100%",
+  display: "flex",
+  flexDirection: "column",
+  borderRadius: theme.spacing(2),
+  backgroundColor: theme.palette.background.paper,
+  boxShadow: "rgba(149, 157, 165, 0.2) 0px 8px 24px",
+  transition: "transform 0.2s ease-in-out",
+  "&:hover": {
+    transform: "translateY(-5px)",
+  },
+  ...theme.applyStyles("dark", {
+    boxShadow: "rgba(0, 0, 0, 0.5) 0px 8px 24px",
+  }),
+}));
 
-const addToCart = (product: Product) => {
-  const existingCart = localStorage.getItem("cart");
-  const cart: Product[] = existingCart ? JSON.parse(existingCart) : [];
-
-  const updatedCart = [...cart, product];
-
-  localStorage.setItem("cart", JSON.stringify(updatedCart));
-  alert("Dodano do koszyka!");
-};
-
-const Products = () => {
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
-  const [displayList, setDisplayList] = useState<Product[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
+function Products() {
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await fetch("https://dummyjson.com/products");
-        const data = await response.json();
-        setAllProducts(data.products);
-        setDisplayList(data.products.slice(0, 30));
-      } catch (error) {
-        console.error("Error:", error);
-      }
-    };
-    fetchProducts();
+    fetch("https://dummyjson.com/products")
+      .then((res) => res.json())
+      .then((data) => {
+        setProducts(data.products);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Błąd pobierania:", err);
+        setLoading(false);
+      });
   }, []);
 
-  const handleFilter = (word: string) => {
-    setSearchTerm(word);
-    const filtered = allProducts.filter(
-      (p) =>
-        p.title.toLowerCase().includes(word.toLowerCase()) ||
-        p.description.toLowerCase().includes(word.toLowerCase())
+  if (loading) {
+    return (
+      <ProductsPageContainer alignItems="center" justifyContent="center">
+        <CircularProgress />
+      </ProductsPageContainer>
     );
-    setDisplayList(filtered.slice(0, 30));
-  };
-
-  const sortAsc = () => {
-    const sorted = [...displayList].sort((a, b) =>
-      a.title.localeCompare(b.title)
-    );
-    setDisplayList(sorted);
-  };
-
-  const sortDesc = () => {
-    const sorted = [...displayList].sort((a, b) =>
-      b.title.localeCompare(a.title)
-    );
-    setDisplayList(sorted);
-  };
+  }
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>Produkty</h1>
+    <ProductsPageContainer>
+      <Container maxWidth="lg">
+        <Box sx={{ mb: 5, textAlign: "center" }}>
+          <Typography
+            variant="h3"
+            component="h1"
+            fontWeight="bold"
+            color="primary"
+            gutterBottom
+          >
+            Nasze Produkty 🛍️
+          </Typography>
+        </Box>
 
-      <div style={{ marginBottom: "10px" }}>
-        <input
-          type="text"
-          placeholder="Szukaj..."
-          value={searchTerm}
-          onChange={(e) => handleFilter(e.target.value)}
-        />
-        <button onClick={sortAsc}>Sortuj A-Z</button>
-        <button onClick={sortDesc}>Sortuj Z-A</button>
-        <button onClick={() => setDisplayList(allProducts.slice(0, 30))}>
-          Oryginalna kolejność
-        </button>
-      </div>
-
-      <table>
-        <thead>
-          <tr>
-            <th>Zdjęcie</th>
-            <th>Tytuł</th>
-            <th>Opis</th>
-            <th>Do Koszyka</th>
-          </tr>
-        </thead>
-        <tbody>
-          {displayList.map((p) => (
-            <tr key={p.id}>
-              <td>
-                <img
-                  src={p.thumbnail}
-                  alt={p.title}
-                  style={{ width: "100px" }}
+        <Grid container spacing={4}>
+          {products.map((product) => (
+            <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={product.id}>
+              <ProductCard variant="outlined">
+                <CardMedia
+                  component="img"
+                  height="200"
+                  image={product.thumbnail}
+                  alt={product.title}
+                  sx={{ objectFit: "contain", p: 2, bgcolor: "transparent" }}
                 />
-              </td>
-              <td>
-                <Button component={Link} to={`/productdetails/${p.id}`}>
-                  {p.title}
-                </Button>
-              </td>
-              <td>{p.description}</td>
-              <td>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  onClick={() => addToCart(p)}
-                >
-                  Dodaj do koszyka
-                </Button>
-              </td>
-            </tr>
+
+                <CardContent sx={{ flexGrow: 1 }}>
+                  <Typography
+                    gutterBottom
+                    variant="h6"
+                    component="div"
+                    fontWeight="bold"
+                    noWrap
+                  >
+                    {product.title}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{
+                      display: "-webkit-box",
+                      overflow: "hidden",
+                      WebkitBoxOrient: "vertical",
+                      WebkitLineClamp: 3,
+                    }}
+                  >
+                    {product.description}
+                  </Typography>
+                  <Typography
+                    variant="h6"
+                    color="secondary"
+                    sx={{ mt: 2, fontWeight: "bold" }}
+                  >
+                    {product.price} $
+                  </Typography>
+                </CardContent>
+
+                <CardActions sx={{ p: 2, pt: 0 }}>
+                  <Button
+                    variant="contained"
+                    fullWidth
+                    component={Link}
+                    to={`/productdetails/${product.id}`}
+                  >
+                    Szczegóły
+                  </Button>
+                </CardActions>
+              </ProductCard>
+            </Grid>
           ))}
-        </tbody>
-      </table>
-    </div>
+        </Grid>
+      </Container>
+    </ProductsPageContainer>
   );
-};
+}
 
 export default Products;

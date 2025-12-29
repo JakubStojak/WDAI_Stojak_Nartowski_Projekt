@@ -14,6 +14,7 @@ import Stack from "@mui/material/Stack";
 import MuiCard from "@mui/material/Card";
 import { styled } from "@mui/material/styles";
 import ForgotPassword from "../components/ForgotPassword";
+import { Link as RouterLink } from "react-router-dom";
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -210,7 +211,8 @@ export default function Login(props: { disableCustomTheme?: boolean }) {
             <Typography sx={{ textAlign: "center" }}>
               Nie masz konta?
               <Link
-                href="/register"
+                component={RouterLink}
+                to="/register"
                 variant="body2"
                 sx={{ alignSelf: "center" }}
               >
