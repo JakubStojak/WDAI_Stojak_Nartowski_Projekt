@@ -14,7 +14,10 @@ import Stack from "@mui/material/Stack";
 import MuiCard from "@mui/material/Card";
 import { styled } from "@mui/material/styles";
 import ForgotPassword from "../components/ForgotPassword";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
+
+import axios, { setAccessToken } from "../api/axios";
+import { useAuth } from "../context/AuthContext";
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -65,24 +68,15 @@ export default function Login(props: { disableCustomTheme?: boolean }) {
   const [passwordErrorMessage, setPasswordErrorMessage] = React.useState("");
   const [open, setOpen] = React.useState(false);
 
+  const { setAuth } = useAuth();
+  const navigate = useNavigate();
+
   const handleClickOpen = () => {
     setOpen(true);
   };
 
   const handleClose = () => {
     setOpen(false);
-  };
-
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    if (emailError || passwordError) {
-      event.preventDefault();
-      return;
-    }
-    const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get("email"),
-      password: data.get("password"),
-    });
   };
 
   const validateInputs = () => {
@@ -102,7 +96,7 @@ export default function Login(props: { disableCustomTheme?: boolean }) {
 
     if (!password.value || password.value.length < 6) {
       setPasswordError(true);
-      setPasswordErrorMessage("Hasło musi mieć conajmniej 6 znaków.");
+      setPasswordErrorMessage("Wpisz hasło.");
       isValid = false;
     } else {
       setPasswordError(false);
@@ -110,6 +104,56 @@ export default function Login(props: { disableCustomTheme?: boolean }) {
     }
 
     return isValid;
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!validateInputs()) {
+      return;
+    }
+
+    const data = new FormData(event.currentTarget);
+    const email = data.get("email");
+    const password = data.get("password");
+
+    try {
+      const response = await axios.post(
+        "/login",
+        JSON.stringify({ email, password }),
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        }
+      );
+
+      const accessToken = response.data.accessToken;
+      const role = response.data.role;
+      const id = response.data.id;
+      const nickname = response.data.nickname;
+      const preference_theme = response.data.preference_theme;
+
+      setAccessToken(accessToken);
+
+      setAuth({ email, role, accessToken, id, nickname, preference_theme });
+
+      console.log("Zalogowano pomyślnie!", nickname);
+
+      navigate("/");
+    } catch (err: any) {
+      if (!err?.response) {
+        setEmailErrorMessage("Brak odpowiedzi serwera. Czy serwer działa?");
+        setEmailError(true);
+      } else if (err.response?.status === 400 || err.response?.status === 401) {
+        setEmailErrorMessage("Nieprawidłowy email lub hasło");
+        setEmailError(true);
+        setPasswordError(true);
+        setPasswordErrorMessage("Sprawdź poprawność danych");
+      } else {
+        setEmailErrorMessage("Logowanie nieudane. Spróbuj ponownie.");
+        setEmailError(true);
+      }
+    }
   };
 
   return (
@@ -162,7 +206,6 @@ export default function Login(props: { disableCustomTheme?: boolean }) {
                 type="password"
                 id="password"
                 autoComplete="current-password"
-                autoFocus
                 required
                 fullWidth
                 variant="outlined"
@@ -174,12 +217,7 @@ export default function Login(props: { disableCustomTheme?: boolean }) {
               label="Zapamiętaj mnie"
             />
             <ForgotPassword open={open} handleClose={handleClose} />
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              onClick={validateInputs}
-            >
+            <Button type="submit" fullWidth variant="contained">
               Zaloguj się
             </Button>
             <Link

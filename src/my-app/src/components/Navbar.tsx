@@ -1,7 +1,15 @@
 import { AppBar, Toolbar, Typography, Button } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const Navbar = () => {
+  const { auth, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/");
+  };
   return (
     <AppBar position="static">
       <Toolbar>
@@ -17,12 +25,20 @@ const Navbar = () => {
         <Button color="inherit" component={Link} to="/cart">
           Koszyk
         </Button>
-        <Button color="inherit" component={Link} to="/user">
-          Profil
-        </Button>
-        <Button color="inherit" component={Link} to="/login">
-          Login
-        </Button>
+        {auth?.accessToken && (
+          <Button color="inherit" component={Link} to="/user">
+            Profil
+          </Button>
+        )}
+        {auth?.accessToken ? (
+          <Button color="inherit" onClick={handleLogout}>
+            Logout
+          </Button>
+        ) : (
+          <Button color="inherit" component={Link} to="/login">
+            Login
+          </Button>
+        )}
       </Toolbar>
     </AppBar>
   );

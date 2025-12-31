@@ -19,33 +19,20 @@ import {
 import { styled } from "@mui/material/styles";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
+import { useAuth } from "../context/AuthContext";
+import axios, { axiosPrivate } from "../api/axios";
+import RateReviewIcon from "@mui/icons-material/RateReview";
+import AddReviewDialog from "../components/AddReviewDialog";
 
-interface Product {
+interface DatabaseReview {
   id: number;
-  title: string;
-  description: string;
-  category: string;
-  price: number;
-  thumbnail: string;
-  reviews: Review[];
-}
-
-interface Review {
   rating: number;
   comment: string;
-  date: string;
-  reviewerName: string;
+  createdAt: string;
+  User: {
+    nickname: string;
+  };
 }
-
-const addToCart = (product: Product) => {
-  const existingCart = localStorage.getItem("cart");
-  const cart: Product[] = existingCart ? JSON.parse(existingCart) : [];
-
-  const updatedCart = [...cart, product];
-
-  localStorage.setItem("cart", JSON.stringify(updatedCart));
-  alert("Dodano do koszyka!");
-};
 
 const PageContainer = styled(Stack)(({ theme }) => ({
   minHeight: "100vh",
@@ -87,7 +74,39 @@ const ReviewCard = styled(Paper)(({ theme }) => ({
 function ProductDetails() {
   const { id } = useParams();
   const [product, setProduct] = useState<any>(null);
+  const [dbReviews, setDbReviews] = useState<DatabaseReview[]>([]);
   const [loading, setLoading] = useState(true);
+  const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
+  const { auth } = useAuth();
+
+  const handleAddToCart = async (prod: any) => {
+    if (!auth?.accessToken) {
+      alert("Musisz być zalogowany, aby dodać produkt do koszyka!");
+      return;
+    }
+
+    try {
+      await axiosPrivate.post("/cart", { product: prod });
+      alert("Dodano do koszyka!");
+    } catch (error) {
+      console.error(error);
+      alert("Błąd podczas dodawania.");
+    }
+  };
+
+  const handleAddReview = async (rating: number, comment: string) => {
+    try {
+      const response = await axiosPrivate.post("/reviews", {
+        productId: id,
+        rating,
+        comment,
+      });
+      setDbReviews((prev) => [response.data, ...prev]);
+      alert("Opinia dodana!");
+    } catch (error: any) {
+      alert(error.response?.data?.message || "Błąd dodawania opinii");
+    }
+  };
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -107,6 +126,10 @@ function ProductDetails() {
         } else {
           setProduct(data);
         }
+        console.log("React: Pobieram opinie dla ID:", id);
+        const reviewsRes = await axios.get(`/reviews/${id}`);
+        console.log("React: Pobrane opinie:", reviewsRes.data);
+        setDbReviews(reviewsRes.data);
       } catch (error) {
         console.error("Błąd połączenia:", error);
       } finally {
@@ -202,7 +225,7 @@ function ProductDetails() {
                     size="large"
                     fullWidth
                     startIcon={<AddShoppingCartIcon />}
-                    onClick={() => addToCart(product)}
+                    onClick={() => handleAddToCart(product)}
                     sx={{ py: 1.5, fontSize: "1.1rem" }}
                   >
                     Dodaj do koszyka
@@ -236,25 +259,42 @@ function ProductDetails() {
                 </Typography>
 
                 <Box sx={{ mt: 5 }}>
-                  <Typography
-                    variant="h5"
-                    gutterBottom
-                    sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                  <Stack
+                    direction="row"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    mb={2}
                   >
-                    Opinie ({product.reviews?.length || 0})
-                  </Typography>
+                    <Typography
+                      variant="h5"
+                      sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                    >
+                      Opinie klientów ({dbReviews.length})
+                    </Typography>
+
+                    {auth?.accessToken && (
+                      <Button
+                        variant="outlined"
+                        startIcon={<RateReviewIcon />}
+                        onClick={() => setReviewDialogOpen(true)}
+                      >
+                        Dodaj opinię
+                      </Button>
+                    )}
+                  </Stack>
                   <Divider sx={{ mb: 3 }} />
 
-                  {product.reviews && product.reviews.length > 0 ? (
-                    product.reviews.map((review: Review, index: number) => (
-                      <ReviewCard key={`review-${index}`} elevation={0}>
+                  {dbReviews.length > 0 ? (
+                    dbReviews.map((review) => (
+                      <ReviewCard key={review.id} elevation={0}>
                         <Stack
                           direction="row"
                           spacing={2}
                           alignItems="flex-start"
                         >
-                          <Avatar sx={{ bgcolor: "primary.main" }}>
-                            {review.reviewerName.charAt(0)}
+                          <Avatar sx={{ bgcolor: "secondary.main" }}>
+                            {review.User?.nickname?.charAt(0).toUpperCase() ||
+                              "U"}
                           </Avatar>
                           <Box flexGrow={1}>
                             <Stack
@@ -263,13 +303,15 @@ function ProductDetails() {
                               alignItems="center"
                             >
                               <Typography fontWeight="bold">
-                                {review.reviewerName}
+                                {review.User?.nickname || "Użytkownik"}
                               </Typography>
                               <Typography
                                 variant="caption"
                                 color="text.secondary"
                               >
-                                {new Date(review.date).toLocaleDateString()}
+                                {new Date(
+                                  review.createdAt
+                                ).toLocaleDateString()}
                               </Typography>
                             </Stack>
 
@@ -288,15 +330,31 @@ function ProductDetails() {
                       </ReviewCard>
                     ))
                   ) : (
-                    <Typography fontStyle="italic" color="text.secondary">
-                      Brak opinii dla tego produktu.
-                    </Typography>
+                    <Box textAlign="center" py={3}>
+                      <Typography
+                        fontStyle="italic"
+                        color="text.secondary"
+                        gutterBottom
+                      >
+                        Ten produkt nie ma jeszcze opinii z naszego sklepu.
+                      </Typography>
+                      {!auth?.accessToken && (
+                        <Typography variant="caption">
+                          Zaloguj się, aby dodać pierwszą opinię!
+                        </Typography>
+                      )}
+                    </Box>
                   )}
                 </Box>
               </CardContent>
             </Grid>
           </Grid>
         </DetailCard>
+        <AddReviewDialog
+          open={reviewDialogOpen}
+          handleClose={() => setReviewDialogOpen(false)}
+          onSubmit={handleAddReview}
+        />
       </Container>
     </PageContainer>
   );

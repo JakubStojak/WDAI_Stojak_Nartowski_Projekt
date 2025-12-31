@@ -14,6 +14,8 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
+import { useAuth } from "../context/AuthContext";
+import { axiosPrivate } from "../api/axios";
 
 interface Product {
   id: number;
@@ -33,9 +35,9 @@ interface Review {
 }
 
 const categoryMap: Record<string, string> = {
-  "Piękno": "beauty",
-  "Meble": "furniture",
-  "Żywność": "groceries",
+  Piękno: "beauty",
+  Meble: "furniture",
+  Żywność: "groceries",
 };
 
 const ProductsPageContainer = styled(Stack)(({ theme }) => ({
@@ -60,14 +62,6 @@ const ProductsPageContainer = styled(Stack)(({ theme }) => ({
   },
 }));
 
-const addToCart = (product: Product) => {
-  const existingCart = localStorage.getItem("cart");
-  const cart: Product[] = existingCart ? JSON.parse(existingCart) : [];
-  const updatedCart = [...cart, product];
-  localStorage.setItem("cart", JSON.stringify(updatedCart));
-  alert("Dodano do koszyka!");
-};
-
 const ProductCard = styled(Card)(({ theme }) => ({
   height: "100%",
   display: "flex",
@@ -77,13 +71,31 @@ const ProductCard = styled(Card)(({ theme }) => ({
   boxShadow: "rgba(149, 157, 165, 0.2) 0px 8px 24px",
   transition: "transform 0.2s ease-in-out",
   "&:hover": { transform: "translateY(-5px)" },
-  ...theme.applyStyles("dark", { boxShadow: "rgba(0, 0, 0, 0.5) 0px 8px 24px" }),
+  ...theme.applyStyles("dark", {
+    boxShadow: "rgba(0, 0, 0, 0.5) 0px 8px 24px",
+  }),
 }));
 
 function Products() {
   const { cat } = useParams<{ cat: string }>();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const { auth } = useAuth();
+
+  const handleAddToCart = async (product: Product) => {
+    if (!auth?.accessToken) {
+      alert("Musisz być zalogowany, aby dodać produkt do koszyka!");
+      return;
+    }
+
+    try {
+      await axiosPrivate.post("/cart", { product });
+      alert("Dodano do koszyka!");
+    } catch (error) {
+      console.error("Błąd dodawania do koszyka:", error);
+      alert("Wystąpił błąd podczas dodawania do koszyka.");
+    }
+  };
 
   useEffect(() => {
     fetch("https://dummyjson.com/products?limit=100")
@@ -117,7 +129,12 @@ function Products() {
     <ProductsPageContainer>
       <Container maxWidth="lg">
         <Box sx={{ mb: 5, textAlign: "center" }}>
-          <Typography variant="h3" fontWeight="bold" color="primary" gutterBottom>
+          <Typography
+            variant="h3"
+            fontWeight="bold"
+            color="primary"
+            gutterBottom
+          >
             Nasze Produkty 🛍️
           </Typography>
 
@@ -145,7 +162,11 @@ function Products() {
                     fullWidth
                     component={Link}
                     to={`/products/${catName}`}
-                    sx={{ height: 50, bgcolor: "white", "&:hover": { bgcolor: "#f5f5f5" } }}
+                    sx={{
+                      height: 50,
+                      bgcolor: "white",
+                      "&:hover": { bgcolor: "#f5f5f5" },
+                    }}
                   >
                     {catName}
                   </Button>
@@ -167,7 +188,12 @@ function Products() {
                   sx={{ objectFit: "contain", p: 2, bgcolor: "transparent" }}
                 />
                 <CardContent sx={{ flexGrow: 1 }}>
-                  <Typography gutterBottom variant="h6" fontWeight="bold" noWrap>
+                  <Typography
+                    gutterBottom
+                    variant="h6"
+                    fontWeight="bold"
+                    noWrap
+                  >
                     {product.title}
                   </Typography>
                   <Typography
@@ -182,7 +208,11 @@ function Products() {
                   >
                     {product.description}
                   </Typography>
-                  <Typography variant="h6" color="secondary" sx={{ mt: 2, fontWeight: "bold" }}>
+                  <Typography
+                    variant="h6"
+                    color="secondary"
+                    sx={{ mt: 2, fontWeight: "bold" }}
+                  >
                     {product.price} $
                   </Typography>
                 </CardContent>
@@ -195,7 +225,11 @@ function Products() {
                   >
                     Szczegóły
                   </Button>
-                  <Button fullWidth variant="contained" onClick={() => addToCart(product)}>
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    onClick={() => handleAddToCart(product)}
+                  >
                     Dodaj
                   </Button>
                 </CardActions>

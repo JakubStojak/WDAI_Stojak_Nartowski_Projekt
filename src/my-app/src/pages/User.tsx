@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Container,
   Typography,
@@ -19,10 +19,11 @@ import EditIcon from "@mui/icons-material/Edit";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
-
-interface UserProps {
-  changeTheme: () => void;
-}
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { axiosPrivate } from "../api/axios";
+import StarIcon from "@mui/icons-material/Star";
+import { useTheme } from "@mui/material";
 
 const MOCK_ORDERS = [
   {
@@ -107,16 +108,103 @@ const SectionPaper = styled(Paper)(({ theme }) => ({
   }),
 }));
 
-function User({ changeTheme }: UserProps) {
-  const [nick, setNick] = useState("JanKowalski_PL");
-  const points = 1540;
-
+function User() {
+  const { auth, updateNickname, updateTheme } = useAuth();
+  const navigate = useNavigate();
+  const [nick, setNick] = useState(auth?.nickname || "");
+  const [isSaving, setIsSaving] = useState(false);
+  const [adminProductId, setAdminProductId] = useState("");
+  const [isAdminSaving, setIsAdminSaving] = useState(false);
   const [showAllOrders, setShowAllOrders] = useState(false);
   const [showAllReviews, setShowAllReviews] = useState(false);
+  const themeObj = useTheme();
+
+  useEffect(() => {
+    if (!auth?.accessToken) {
+      navigate("/login");
+    } else {
+      setNick(auth.nickname || "");
+    }
+  }, [auth, navigate]);
+
+  if (!auth?.accessToken) return null;
+
+  const handleNickChange = async () => {
+    if (nick.length < 3) {
+      alert("Nick jest za krótki!");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      await axiosPrivate.put(
+        "/change-nickname",
+        JSON.stringify({ nickname: nick }),
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        }
+      );
+
+      updateNickname(nick);
+      alert("Nick zmieniony pomyślnie!");
+    } catch (err: any) {
+      console.error(err);
+      alert(
+        "Błąd zmiany nicku: " + (err.response?.data?.message || "Błąd serwera")
+      );
+      setNick(auth?.nickname || "");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleProductChange = async () => {
+    if (
+      !adminProductId ||
+      isNaN(Number(adminProductId)) ||
+      Number(adminProductId) < 1 ||
+      Number(adminProductId) > 100
+    ) {
+      alert("Podaj poprawne ID produktu (1-100)");
+      return;
+    }
+
+    setIsAdminSaving(true);
+    try {
+      await axiosPrivate.put(
+        "/product-of-month",
+        JSON.stringify({ id: adminProductId })
+      );
+      alert("Produkt miesiąca został zmieniony!");
+      setAdminProductId("");
+    } catch (err) {
+      console.error(err);
+      alert("Błąd podczas zmiany produktu. Czy na pewno jesteś adminem?");
+    } finally {
+      setIsAdminSaving(false);
+    }
+  };
 
   const getVisibleItems = (items: any[], showAll: boolean) => {
     if (showAll) return items;
     return items.slice(0, 3);
+  };
+
+  const handleThemeChange = async () => {
+    const newMode = themeObj.palette.mode === "light" ? "dark" : "light";
+
+    updateTheme(newMode);
+
+    try {
+      await axiosPrivate.put(
+        "/change-theme",
+        JSON.stringify({ theme: newMode })
+      );
+      console.log("Zapisano:", newMode);
+    } catch (err) {
+      console.error("Błąd zapisu motywu", err);
+    }
   };
 
   return (
@@ -140,12 +228,12 @@ function User({ changeTheme }: UserProps) {
             color="primary"
             align="center"
           >
-            Witaj, {nick}! 👋
+            Witaj {nick}! 👋
           </Typography>
 
           <Button
             variant="outlined"
-            onClick={changeTheme}
+            onClick={handleThemeChange}
             startIcon={<DarkModeIcon />}
             sx={{
               borderRadius: 5,
@@ -163,27 +251,6 @@ function User({ changeTheme }: UserProps) {
 
         <SectionPaper elevation={3} sx={{ mb: 5, maxWidth: 800, mx: "auto" }}>
           <Stack spacing={3}>
-            <Box sx={{ textAlign: "center" }}>
-              <Typography variant="h6" color="text.secondary">
-                Twoje punkty:
-              </Typography>
-              <Stack
-                direction="row"
-                justifyContent="center"
-                alignItems="center"
-                spacing={1}
-              >
-                <Typography
-                  variant="h2"
-                  fontWeight="900"
-                  color="secondary.main"
-                >
-                  {points}
-                </Typography>
-                <Typography variant="h4">💎</Typography>
-              </Stack>
-            </Box>
-            <Divider />
             <Box
               component="form"
               sx={{
@@ -199,10 +266,61 @@ function User({ changeTheme }: UserProps) {
                 value={nick}
                 onChange={(e) => setNick(e.target.value)}
               />
-              <Button variant="contained" size="small" startIcon={<EditIcon />}>
-                Zmień
+              <Button
+                variant="contained"
+                size="small"
+                startIcon={<EditIcon />}
+                onClick={handleNickChange}
+                disabled={isSaving || nick === auth?.nickname}
+              >
+                {isSaving ? "Zapisywanie..." : "Zmień"}
               </Button>
             </Box>
+            {auth.role === "admin" && (
+              <>
+                <Divider sx={{ my: 2 }}>PANEL ADMINISTRATORA</Divider>
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 2,
+                    bgcolor: "rgba(255, 215, 0, 0.1)",
+                    p: 2,
+                    borderRadius: 2,
+                    border: "1px solid gold",
+                  }}
+                >
+                  <Typography
+                    variant="body1"
+                    fontWeight="bold"
+                    sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                  >
+                    <StarIcon color="warning" /> Zmień produkt miesiąca (Home)
+                  </Typography>
+                  <Box sx={{ display: "flex", gap: 2, alignItems: "flex-end" }}>
+                    <TextField
+                      hiddenLabel
+                      placeholder="ID"
+                      type="number"
+                      variant="outlined"
+                      size="small"
+                      value={adminProductId}
+                      onChange={(e) => setAdminProductId(e.target.value)}
+                      slotProps={{ htmlInput: { min: 1, max: 100 } }}
+                    />
+                    <Button
+                      variant="contained"
+                      color="warning"
+                      onClick={handleProductChange}
+                      disabled={isAdminSaving}
+                    >
+                      Zapisz ID
+                    </Button>
+                  </Box>
+                </Box>
+              </>
+            )}
           </Stack>
         </SectionPaper>
 

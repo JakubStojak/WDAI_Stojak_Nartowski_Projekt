@@ -10,6 +10,8 @@ import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 import MuiCard from "@mui/material/Card";
 import { styled } from "@mui/material/styles";
+import { useNavigate } from "react-router-dom";
+import axios from "../api/axios";
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -58,25 +60,25 @@ export default function Register(props: { disableCustomTheme?: boolean }) {
   const [emailErrorMessage, setEmailErrorMessage] = React.useState("");
   const [passwordError, setPasswordError] = React.useState(false);
   const [passwordErrorMessage, setPasswordErrorMessage] = React.useState("");
-
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    if (emailError || passwordError) {
-      event.preventDefault();
-      return;
-    }
-    const data = new FormData(event.currentTarget);
-    console.log({
-      //TODO: zmiana na operacje CRUD
-      email: data.get("email"),
-      password: data.get("password"),
-    });
-  };
+  const [nickError, setNickError] = React.useState(false);
+  const [nickErrorMessage, setNickErrorMessage] = React.useState("");
+  const navigate = useNavigate();
 
   const validateInputs = () => {
     const email = document.getElementById("email") as HTMLInputElement;
     const password = document.getElementById("password") as HTMLInputElement;
+    const nickname = document.getElementById("nickname") as HTMLInputElement;
 
     let isValid = true;
+
+    if (!nickname.value || nickname.value.length < 3) {
+      setNickError(true);
+      setNickErrorMessage("Nick musi mieć min. 3 znaki.");
+      isValid = false;
+    } else {
+      setNickError(false);
+      setNickErrorMessage("");
+    }
 
     if (!email.value || !/\S+@\S+\.\S+/.test(email.value)) {
       setEmailError(true);
@@ -97,6 +99,41 @@ export default function Register(props: { disableCustomTheme?: boolean }) {
     }
 
     return isValid;
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!validateInputs()) {
+      return;
+    }
+
+    const data = new FormData(event.currentTarget);
+
+    try {
+      await axios.post(
+        "/register",
+        JSON.stringify({
+          email: data.get("email"),
+          password: data.get("password"),
+          nickname: data.get("nickname"),
+        }),
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
+      alert("Rejestracja udana! Możesz się teraz zalogować.");
+      navigate("/login");
+    } catch (err: any) {
+      if (err.response?.status === 400) {
+        setEmailErrorMessage("Ten adres email jest już zajęty.");
+        setEmailError(true);
+      } else {
+        setEmailErrorMessage("Wystąpił błąd rejestracji. Spróbuj później.");
+        setEmailError(true);
+      }
+    }
   };
 
   return (
@@ -122,6 +159,21 @@ export default function Register(props: { disableCustomTheme?: boolean }) {
               gap: 2,
             }}
           >
+            <FormControl>
+              <FormLabel htmlFor="nickname">Nick</FormLabel>
+              <TextField
+                error={nickError}
+                helperText={nickErrorMessage}
+                id="nickname"
+                name="nickname"
+                placeholder="Twój Nick"
+                autoComplete="nickname"
+                required
+                fullWidth
+                variant="outlined"
+                color={nickError ? "error" : "primary"}
+              />
+            </FormControl>
             <FormControl>
               <FormLabel htmlFor="email">Email</FormLabel>
               <TextField

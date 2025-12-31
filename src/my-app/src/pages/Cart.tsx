@@ -16,13 +16,16 @@ import { styled } from "@mui/material/styles";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import DeleteSweepIcon from "@mui/icons-material/DeleteSweep";
 import ShoppingCartCheckoutIcon from "@mui/icons-material/ShoppingCartCheckout";
+import { useAuth } from "../context/AuthContext";
+import { axiosPrivate } from "../api/axios";
 
-interface Product {
+interface CartItem {
   id: number;
+  productId: number;
   title: string;
-  description: string;
   price: number;
   thumbnail: string;
+  quantity: number;
 }
 
 const CartPageContainer = styled(Stack)(({ theme }) => ({
@@ -73,21 +76,79 @@ const SummaryCard = styled(Card)(({ theme }) => ({
 }));
 
 function Cart() {
-  const [items, setItems] = useState<Product[]>([]);
+  const [items, setItems] = useState<CartItem[]>([]);
+  const { auth } = useAuth();
 
-  useEffect(() => {
-    const savedCart = localStorage.getItem("cart");
-    if (savedCart) {
-      setItems(JSON.parse(savedCart));
+  const fetchCart = async () => {
+    if (!auth?.accessToken) return;
+
+    try {
+      const response = await axiosPrivate.get("/cart");
+      setItems(response.data);
+    } catch (error) {
+      console.error("Błąd pobierania koszyka", error);
     }
-  }, []);
-
-  const clearCart = () => {
-    localStorage.removeItem("cart");
-    setItems([]);
   };
 
-  const totalSum = items.reduce((sum, p) => sum + p.price, 0).toFixed(2);
+  useEffect(() => {
+    if (auth?.accessToken) {
+      fetchCart();
+    } else {
+      setItems([]);
+    }
+  }, [auth]);
+  const handleCheckout = async () => {
+    if (!auth?.accessToken) return;
+
+    try {
+      await axiosPrivate.post("/orders");
+
+      alert("Dziękujemy! Twoje zamówienie zostało złożone pomyślnie.");
+
+      setItems([]);
+    } catch (error) {
+      console.error("Błąd składania zamówienia", error);
+      alert(
+        "Wystąpił błąd podczas przetwarzania zamówienia. Spróbuj ponownie."
+      );
+    }
+  };
+
+  const clearCart = async () => {
+    if (!auth?.accessToken) return;
+
+    try {
+      await axiosPrivate.delete("/cart");
+      setItems([]);
+      alert("Koszyk wyczyszczony!");
+    } catch (error) {
+      console.error("Błąd czyszczenia", error);
+    }
+  };
+
+  const totalSum = items
+    .reduce((sum, item) => sum + item.price * item.quantity, 0)
+    .toFixed(2);
+
+  if (!auth?.accessToken) {
+    return (
+      <CartPageContainer>
+        <Container maxWidth="md">
+          <Card variant="outlined" sx={{ p: 5, textAlign: "center", mt: 5 }}>
+            <Typography variant="h5" gutterBottom>
+              Dostęp tylko dla zalogowanych
+            </Typography>
+            <Typography variant="body1" sx={{ mb: 2 }}>
+              Musisz się zalogować, aby zobaczyć swój koszyk.
+            </Typography>
+            <Button variant="contained" component={Link} to="/login">
+              Zaloguj się
+            </Button>
+          </Card>
+        </Container>
+      </CartPageContainer>
+    );
+  }
 
   return (
     <CartPageContainer>
@@ -131,13 +192,13 @@ function Cart() {
         ) : (
           <Grid container spacing={4}>
             <Grid size={{ xs: 12, md: 8 }}>
-              {items.map((item, index) => (
-                <CartItemCard key={index}>
+              {items.map((item) => (
+                <CartItemCard key={item.id}>
                   <CardMedia
                     component="img"
                     sx={{ width: 100, height: 100, objectFit: "contain", p: 1 }}
                     image={item.thumbnail}
-                    alt={item.description}
+                    alt={item.title}
                   />
 
                   <CardContent
@@ -154,7 +215,7 @@ function Cart() {
                         {item.title}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        {item.description.substring(0, 50)}...
+                        Ilość: {item.quantity} szt.
                       </Typography>
                     </Box>
 
@@ -164,7 +225,7 @@ function Cart() {
                       fontWeight="bold"
                       sx={{ minWidth: 100, textAlign: "right" }}
                     >
-                      ${item.price}
+                      ${(item.price * item.quantity).toFixed(2)}
                     </Typography>
                   </CardContent>
                 </CartItemCard>
@@ -196,7 +257,7 @@ function Cart() {
                     size="large"
                     fullWidth
                     startIcon={<ShoppingCartCheckoutIcon />}
-                    onClick={() => alert("Przejście do płatności...")}
+                    onClick={handleCheckout}
                   >
                     Kupuję i płacę
                   </Button>

@@ -15,6 +15,7 @@ import {
 } from "@mui/material";
 import MuiCard from "@mui/material/Card";
 import { styled } from "@mui/material/styles";
+import axios from "../api/axios";
 
 const HomeContainer = styled(Stack)(({ theme }) => ({
   minHeight: "100vh",
@@ -59,14 +60,21 @@ const ProductCard = styled(MuiCard)(({ theme }) => ({
 }));
 
 function Home() {
-  const id = 39;
+  const id = 100;
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProduct = async () => {
+  const fetchProductData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`https://dummyjson.com/products/${id}`);
+      const settingsResponse = await axios.get("/product-of-month");
+      const productId = settingsResponse.data.id || "100";
+
+      console.log("Pobrano ID produktu miesiąca:", productId);
+
+      const response = await fetch(
+        `https://dummyjson.com/products/${productId}`
+      );
       const data = await response.json();
 
       if (data.id) {
@@ -83,7 +91,7 @@ function Home() {
   };
 
   useEffect(() => {
-    fetchProduct();
+    fetchProductData();
   }, [id]);
 
   const categories = ["Piękno", "Meble", "Żywność"];
