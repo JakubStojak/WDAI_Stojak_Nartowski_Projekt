@@ -11,11 +11,16 @@ import {
   CardContent,
   CardMedia,
   Divider,
+  IconButton,
+  TextField,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import DeleteSweepIcon from "@mui/icons-material/DeleteSweep";
 import ShoppingCartCheckoutIcon from "@mui/icons-material/ShoppingCartCheckout";
+import AddIcon from "@mui/icons-material/Add";
+import RemoveIcon from "@mui/icons-material/Remove";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { useAuth } from "../context/AuthContext";
 import { axiosPrivate } from "../api/axios";
 
@@ -90,6 +95,34 @@ function Cart() {
     }
   };
 
+  const handleQuantityChange = async (item: CartItem, newQuantity: number) => {
+    if (newQuantity < 1) return;
+
+    try {
+
+      await axiosPrivate.put(`/cart/${item.id}`, { quantity: newQuantity });
+      
+      setItems((prevItems) =>
+        prevItems.map((i) =>
+          i.id === item.id ? { ...i, quantity: newQuantity } : i
+        )
+      );
+    } catch (error) {
+      console.error("Błąd aktualizacji ilości", error);
+      alert("Nie udało się zaktualizować ilości.");
+    }
+  };
+
+  const handleRemoveItem = async (itemId: number) => {
+    try {
+        await axiosPrivate.delete(`/cart/${itemId}`);
+        setItems((prevItems) => prevItems.filter((item) => item.id !== itemId));
+    } catch (error) {
+        console.error("Błąd usuwania elementu", error);
+        alert("Nie udało się usunąć produktu.");
+    }
+  };
+
   useEffect(() => {
     if (auth?.accessToken) {
       fetchCart();
@@ -97,26 +130,21 @@ function Cart() {
       setItems([]);
     }
   }, [auth]);
+
   const handleCheckout = async () => {
     if (!auth?.accessToken) return;
-
     try {
       await axiosPrivate.post("/orders");
-
       alert("Dziękujemy! Twoje zamówienie zostało złożone pomyślnie.");
-
       setItems([]);
     } catch (error) {
       console.error("Błąd składania zamówienia", error);
-      alert(
-        "Wystąpił błąd podczas przetwarzania zamówienia. Spróbuj ponownie."
-      );
+      alert("Wystąpił błąd podczas przetwarzania zamówienia.");
     }
   };
 
   const clearCart = async () => {
     if (!auth?.accessToken) return;
-
     try {
       await axiosPrivate.delete("/cart");
       setItems([]);
@@ -137,9 +165,6 @@ function Cart() {
           <Card variant="outlined" sx={{ p: 5, textAlign: "center", mt: 5 }}>
             <Typography variant="h5" gutterBottom>
               Dostęp tylko dla zalogowanych
-            </Typography>
-            <Typography variant="body1" sx={{ mb: 2 }}>
-              Musisz się zalogować, aby zobaczyć swój koszyk.
             </Typography>
             <Button variant="contained" component={Link} to="/login">
               Zaloguj się
@@ -205,28 +230,67 @@ function Cart() {
                     sx={{
                       flexGrow: 1,
                       display: "flex",
+                      flexDirection: { xs: "column", sm: "row" }, 
                       justifyContent: "space-between",
                       alignItems: "center",
                       px: 2,
+                      gap: 2,
                     }}
                   >
-                    <Box>
+                    <Box sx={{ flex: 1 }}>
                       <Typography variant="h6" fontWeight="bold">
                         {item.title}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        Ilość: {item.quantity} szt.
+                        Cena jedn.: ${item.price}
                       </Typography>
+                    </Box>
+
+                    <Box display="flex" alignItems="center" gap={1}>
+                        <IconButton 
+                            size="small" 
+                            onClick={() => handleQuantityChange(item, item.quantity - 1)}
+                            disabled={item.quantity <= 1}
+                        >
+                            <RemoveIcon />
+                        </IconButton>
+                        
+                        <TextField 
+                            value={item.quantity}
+                            size="small"
+                            slotProps={{ 
+                                htmlInput: { 
+                                    style: { textAlign: 'center', padding: '5px' }
+                                } 
+                            }}
+                            sx={{ width: 50 }}
+                        />
+
+                        <IconButton 
+                            size="small" 
+                            onClick={() => handleQuantityChange(item, item.quantity + 1)}
+                        >
+                            <AddIcon />
+                        </IconButton>
                     </Box>
 
                     <Typography
                       variant="h6"
                       color="secondary"
                       fontWeight="bold"
-                      sx={{ minWidth: 100, textAlign: "right" }}
+                      sx={{ minWidth: 80, textAlign: "right" }}
                     >
                       ${(item.price * item.quantity).toFixed(2)}
                     </Typography>
+
+                    <IconButton 
+                        color="error" 
+                        onClick={() => handleRemoveItem(item.id)}
+                        title="Usuń z koszyka"
+                    >
+                        <DeleteOutlineIcon />
+                    </IconButton>
+
                   </CardContent>
                 </CartItemCard>
               ))}

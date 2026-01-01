@@ -12,7 +12,10 @@ import {
   CardMedia,
   CardActions,
   CircularProgress,
+  TextField,
+  InputAdornment,
 } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 import { styled } from "@mui/material/styles";
 import { useAuth } from "../context/AuthContext";
 import { axiosPrivate } from "../api/axios";
@@ -76,26 +79,107 @@ const ProductCard = styled(Card)(({ theme }) => ({
   }),
 }));
 
-function Products() {
-  const { cat } = useParams<{ cat: string }>();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+const SingleProductCard = ({ product }: { product: Product }) => {
   const { auth } = useAuth();
+  const [quantity, setQuantity] = useState<number>(1);
 
-  const handleAddToCart = async (product: Product) => {
+  const handleAddToCart = async () => {
     if (!auth?.accessToken) {
       alert("Musisz być zalogowany, aby dodać produkt do koszyka!");
       return;
     }
 
     try {
-      await axiosPrivate.post("/cart", { product });
-      alert("Dodano do koszyka!");
+      await axiosPrivate.post("/cart", { product, quantity });
+      alert(`Dodano do koszyka! Ilość: ${quantity}`);
     } catch (error) {
-      console.error("Błąd dodawania do koszyka:", error);
-      alert("Wystąpił błąd podczas dodawania do koszyka.");
+      console.error(error);
+      alert("Błąd podczas dodawania.");
     }
   };
+
+  return (
+    <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+      <ProductCard variant="outlined">
+        <CardMedia
+          component="img"
+          height="200"
+          image={product.thumbnail}
+          alt={product.title}
+          sx={{ objectFit: "contain", p: 2, bgcolor: "transparent" }}
+        />
+        <CardContent sx={{ flexGrow: 1 }}>
+          <Typography gutterBottom variant="h6" fontWeight="bold" noWrap>
+            {product.title}
+          </Typography>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{
+              display: "-webkit-box",
+              overflow: "hidden",
+              WebkitBoxOrient: "vertical",
+              WebkitLineClamp: 3,
+            }}
+          >
+            {product.description}
+          </Typography>
+          <Typography
+            variant="h6"
+            color="secondary"
+            sx={{ mt: 2, fontWeight: "bold" }}
+          >
+            {product.price} $
+          </Typography>
+        </CardContent>
+
+        <CardActions sx={{ p: 2, pt: 0, gap: 1 }}>
+          <Button
+            variant="contained"
+            size="small"
+            component={Link}
+            to={`/productdetails/${product.id}`}
+            sx={{ flex: 1 }}
+          >
+            Szczegóły
+          </Button>
+
+          <TextField
+            type="number"
+            size="small"
+            label="Ilość"
+            value={quantity}
+            onChange={(e) => {
+              const val = parseInt(e.target.value);
+              if (val > 0) setQuantity(val);
+            }}
+            slotProps={{
+              htmlInput: { min: 1, style: { textAlign: "center" } },
+            }}
+            sx={{ width: 60 }}
+          />
+        </CardActions>
+
+        <Button
+          variant="contained"
+          size="small"
+          color="success"
+          onClick={handleAddToCart}
+          sx={{ minWidth: "auto" }}
+        >
+          Dodaj
+        </Button>
+      </ProductCard>
+    </Grid>
+  );
+};
+
+function Products() {
+  const { cat } = useParams<{ cat: string }>();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     fetch("https://dummyjson.com/products?limit=100")
@@ -119,10 +203,18 @@ function Products() {
   }
 
   const filteredProducts = products.filter((p) => {
-    if (!cat) return true;
-    const englishCat = categoryMap[cat as keyof typeof categoryMap];
-    const finalTarget = (englishCat || cat).toLowerCase();
-    return p.category.toLowerCase() === finalTarget;
+    let matchesCategory = true;
+    if (cat) {
+      const englishCat = categoryMap[cat as keyof typeof categoryMap];
+      const targetCat = (englishCat || cat).toLowerCase();
+      matchesCategory = p.category.toLowerCase() === targetCat;
+    }
+
+    const matchesSearch = p.title
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+
+    return matchesCategory && matchesSearch;
   });
 
   return (
@@ -137,6 +229,25 @@ function Products() {
           >
             Nasze Produkty 🛍️
           </Typography>
+
+          <Box sx={{ maxWidth: 500, mx: "auto", mb: 4 }}>
+            <TextField
+              fullWidth
+              label="Szukaj produktu..."
+              variant="outlined"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Np. mascara, sofa, apple..."
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{ bgcolor: "background.paper", borderRadius: 1 }}
+            />
+          </Box>
 
           {cat !== undefined ? (
             <Box>
@@ -177,65 +288,17 @@ function Products() {
         </Box>
 
         <Grid container spacing={4}>
-          {filteredProducts.map((product) => (
-            <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={product.id}>
-              <ProductCard variant="outlined">
-                <CardMedia
-                  component="img"
-                  height="200"
-                  image={product.thumbnail}
-                  alt={product.title}
-                  sx={{ objectFit: "contain", p: 2, bgcolor: "transparent" }}
-                />
-                <CardContent sx={{ flexGrow: 1 }}>
-                  <Typography
-                    gutterBottom
-                    variant="h6"
-                    fontWeight="bold"
-                    noWrap
-                  >
-                    {product.title}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{
-                      display: "-webkit-box",
-                      overflow: "hidden",
-                      WebkitBoxOrient: "vertical",
-                      WebkitLineClamp: 3,
-                    }}
-                  >
-                    {product.description}
-                  </Typography>
-                  <Typography
-                    variant="h6"
-                    color="secondary"
-                    sx={{ mt: 2, fontWeight: "bold" }}
-                  >
-                    {product.price} $
-                  </Typography>
-                </CardContent>
-                <CardActions sx={{ p: 2, pt: 0 }}>
-                  <Button
-                    variant="contained"
-                    fullWidth
-                    component={Link}
-                    to={`/productdetails/${product.id}`}
-                  >
-                    Szczegóły
-                  </Button>
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    onClick={() => handleAddToCart(product)}
-                  >
-                    Dodaj
-                  </Button>
-                </CardActions>
-              </ProductCard>
+          {filteredProducts.length > 0 ? (
+            filteredProducts.map((product) => (
+              <SingleProductCard key={product.id} product={product} />
+            ))
+          ) : (
+            <Grid size={{ xs: 12 }} sx={{ textAlign: "center", mt: 4 }}>
+              <Typography variant="h6" color="text.secondary">
+                Nie znaleziono produktów pasujących do "{searchTerm}" 😔
+              </Typography>
             </Grid>
-          ))}
+          )}
         </Grid>
       </Container>
     </ProductsPageContainer>

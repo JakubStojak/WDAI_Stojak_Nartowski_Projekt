@@ -232,20 +232,6 @@ export default function Login(props: { disableCustomTheme?: boolean }) {
           </Box>
           <Divider>lub</Divider>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <Button
-              fullWidth
-              variant="outlined"
-              onClick={() => alert("Sign in with Google")}
-            >
-              Zaloguj z Google
-            </Button>
-            <Button
-              fullWidth
-              variant="outlined"
-              onClick={() => alert("Sign in with Facebook")}
-            >
-              Zaloguj z Facebookiem
-            </Button>
             <Typography sx={{ textAlign: "center" }}>
               Nie masz konta?
               <Link

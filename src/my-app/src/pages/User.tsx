@@ -3,7 +3,6 @@ import {
   Container,
   Typography,
   Button,
-  Grid,
   Box,
   Stack,
   Paper,
@@ -11,86 +10,38 @@ import {
   CardContent,
   TextField,
   Divider,
+  CircularProgress,
 } from "@mui/material";
-import { styled } from "@mui/material/styles";
+import { styled, useTheme } from "@mui/material/styles";
 import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 import RateReviewIcon from "@mui/icons-material/RateReview";
 import EditIcon from "@mui/icons-material/Edit";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
+import StarIcon from "@mui/icons-material/Star"; 
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { axiosPrivate } from "../api/axios";
-import StarIcon from "@mui/icons-material/Star";
-import { useTheme } from "@mui/material";
 
-const MOCK_ORDERS = [
-  {
-    id: 1,
-    number: "#12345",
-    date: "12.10.2023",
-    items: ["Telefon", "Etui Skórzane"],
-  },
-  {
-    id: 2,
-    number: "#12346",
-    date: "05.11.2023",
-    items: ["Laptop"],
-  },
-  {
-    id: 3,
-    number: "#12348",
-    date: "20.11.2023",
-    items: ["Słuchawki", "Stojak na słuchawki"],
-  },
-  {
-    id: 4,
-    number: "#12349",
-    date: "01.12.2023",
-    items: ["Kabel USB-C", "Ładowarka", "Powerbank"],
-  },
-  {
-    id: 5,
-    number: "12350",
-    date: "02.01.2024",
-    items: ["Banan", "JaBŁKO"],
-  },
-];
+interface UserProps {
+  changeTheme: () => void;
+}
 
-const MOCK_REVIEWS = [
-  {
-    id: 1,
-    product: "Telefon",
-    text: "Telefon super",
-    rating: 4,
-  },
-  { id: 2, product: "Laptop", text: "Fajny", rating: 5 },
-  { id: 3, product: "Słuchawki", text: "Dobre wygłuszenie.", rating: 5 },
-  {
-    id: 4,
-    product: "Myszka",
-    text: "Trochę za głośno klika.",
-    rating: 3,
-  },
-  { id: 5, product: "Klawiatura", text: "Klawisze wypadają...", rating: 1 },
-];
-
-const UserPageContainer = styled(Stack)(({ theme }) => ({
+const UserPageContainer = styled(Box)(({ theme }) => ({
   minHeight: "100vh",
-  padding: theme.spacing(2),
-  [theme.breakpoints.up("sm")]: {
-    padding: theme.spacing(4),
-  },
+  width: "100%",
+  margin: 0,
+  padding: 0,
+  position: "relative",
+  display: "flex",
+  flexDirection: "column",
   "&::before": {
     content: '""',
     display: "block",
-    position: "absolute",
+    position: "fixed",
     zIndex: -1,
     inset: 0,
     backgroundImage:
       "radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))",
-    backgroundRepeat: "no-repeat",
     ...theme.applyStyles("dark", {
       backgroundImage:
         "radial-gradient(at 50% 50%, hsla(210, 100%, 16%, 0.5), hsl(220, 30%, 5%))",
@@ -98,65 +49,100 @@ const UserPageContainer = styled(Stack)(({ theme }) => ({
   },
 }));
 
-const SectionPaper = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(3),
-  borderRadius: theme.spacing(2),
-  boxShadow: "rgba(149, 157, 165, 0.2) 0px 8px 24px",
-  ...theme.applyStyles("dark", {
-    boxShadow: "rgba(0, 0, 0, 0.5) 0px 8px 24px",
-    backgroundColor: theme.palette.background.paper,
-  }),
-}));
-
-function User() {
+function User({ changeTheme }: UserProps) {
   const { auth, updateNickname, updateTheme } = useAuth();
   const navigate = useNavigate();
-  const [nick, setNick] = useState(auth?.nickname || "");
-  const [isSaving, setIsSaving] = useState(false);
-  const [adminProductId, setAdminProductId] = useState("");
-  const [isAdminSaving, setIsAdminSaving] = useState(false);
-  const [showAllOrders, setShowAllOrders] = useState(false);
-  const [showAllReviews, setShowAllReviews] = useState(false);
   const themeObj = useTheme();
 
+  const [nick, setNick] = useState(auth?.nickname || "");
+  const [isSaving, setIsSaving] = useState(false);
+  
+  const [adminProductId, setAdminProductId] = useState("");
+  const [isAdminSaving, setIsAdminSaving] = useState(false);
+
+  const [showAllOrders, setShowAllOrders] = useState(false);
+  const [showAllReviews, setShowAllReviews] = useState(false);
+
+  const [orders, setOrders] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [productNames, setProductNames] = useState<Record<number, string>>({});
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    if (!auth?.accessToken) {
-      navigate("/login");
-    } else {
-      setNick(auth.nickname || "");
-    }
+    let isMounted = true;
+    const fetchData = async () => {
+      try {
+        const [ordersRes, reviewsRes] = await Promise.all([
+          axiosPrivate.get("/my-orders"),
+          axiosPrivate.get("/my-reviews"),
+        ]);
+        if (isMounted) {
+          setOrders(ordersRes.data || []);
+          setReviews(reviewsRes.data || []);
+        }
+      } catch (err: any) {
+        console.error("Błąd:", err.response?.status);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    if (auth?.accessToken) fetchData();
+    else navigate("/login");
+    return () => {
+      isMounted = false;
+    };
   }, [auth, navigate]);
 
-  if (!auth?.accessToken) return null;
+  useEffect(() => {
+    const fetchProductNames = async () => {
+      if (reviews.length === 0) return;
+
+      const productIds = Array.from(
+        new Set(reviews.map((r: any) => r.productId))
+      );
+      const newNames: Record<number, string> = {};
+
+      await Promise.all(
+        productIds.map(async (id) => {
+          try {
+            const res = await fetch(`https://dummyjson.com/products/${id}`);
+            const data = await res.json();
+            newNames[id] = data.title;
+          } catch (error) {
+            console.error(`Błąd pobierania produktu ${id}`, error);
+            newNames[id] = `Produkt #${id}`;
+          }
+        })
+      );
+
+      setProductNames(newNames);
+    };
+
+    if (reviews.length > 0) {
+      fetchProductNames();
+    }
+  }, [reviews]);
+
 
   const handleNickChange = async () => {
-    if (nick.length < 3) {
-      alert("Nick jest za krótki!");
-      return;
-    }
-
+    if (nick.length < 3) return alert("Nick za krótki!");
     setIsSaving(true);
     try {
-      await axiosPrivate.put(
-        "/change-nickname",
-        JSON.stringify({ nickname: nick }),
-        {
-          headers: { "Content-Type": "application/json" },
-          withCredentials: true,
-        }
-      );
-
+      await axiosPrivate.put("/change-nickname", { nickname: nick });
       updateNickname(nick);
-      alert("Nick zmieniony pomyślnie!");
-    } catch (err: any) {
-      console.error(err);
-      alert(
-        "Błąd zmiany nicku: " + (err.response?.data?.message || "Błąd serwera")
-      );
-      setNick(auth?.nickname || "");
+      alert("Zmieniono nick!");
+    } catch (err) {
+      alert("Błąd zmiany");
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleThemeToggle = () => {
+    const newMode = themeObj.palette.mode === "light" ? "dark" : "light";
+    updateTheme(newMode);
+    changeTheme();
+    axiosPrivate.put("/change-theme", { theme: newMode }).catch(() => {});
   };
 
   const handleProductChange = async () => {
@@ -174,7 +160,10 @@ function User() {
     try {
       await axiosPrivate.put(
         "/product-of-month",
-        JSON.stringify({ id: adminProductId })
+        JSON.stringify({ id: adminProductId }),
+        {
+          headers: { "Content-Type": "application/json" },
+        }
       );
       alert("Produkt miesiąca został zmieniony!");
       setAdminProductId("");
@@ -186,249 +175,268 @@ function User() {
     }
   };
 
-  const getVisibleItems = (items: any[], showAll: boolean) => {
-    if (showAll) return items;
-    return items.slice(0, 3);
-  };
-
-  const handleThemeChange = async () => {
-    const newMode = themeObj.palette.mode === "light" ? "dark" : "light";
-
-    updateTheme(newMode);
-
-    try {
-      await axiosPrivate.put(
-        "/change-theme",
-        JSON.stringify({ theme: newMode })
-      );
-      console.log("Zapisano:", newMode);
-    } catch (err) {
-      console.error("Błąd zapisu motywu", err);
-    }
-  };
+  if (loading)
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
 
   return (
     <UserPageContainer>
-      <Container maxWidth="lg">
-        <Box
-          sx={{
-            mb: 5,
-            position: "relative",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            minHeight: 60,
-          }}
-        >
-          <Typography
-            variant="h3"
-            component="h1"
-            fontWeight="bold"
-            color="primary"
-            align="center"
-          >
-            Witaj {nick}! 👋
+      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 8 } }}>
+        <Box sx={{ mb: 5, textAlign: "center", position: "relative" }}>
+          <Typography variant="h3" fontWeight="bold" color="primary">
+            Witaj, {auth?.nickname || nick}! 👋
           </Typography>
-
           <Button
             variant="outlined"
-            onClick={handleThemeChange}
+            onClick={handleThemeToggle}
             startIcon={<DarkModeIcon />}
             sx={{
               borderRadius: 5,
-              whiteSpace: "nowrap",
-              mt: { xs: 2, md: 0 },
-              position: { xs: "static", md: "absolute" },
-              right: { md: 0 },
-              top: { md: "50%" },
-              transform: { md: "translateY(-50%)" },
+              mt: 2,
+              position: { md: "absolute" },
+              right: 0,
+              top: 0,
             }}
           >
-            Zmień motyw
+            Motyw
           </Button>
         </Box>
 
-        <SectionPaper elevation={3} sx={{ mb: 5, maxWidth: 800, mx: "auto" }}>
-          <Stack spacing={3}>
-            <Box
-              component="form"
-              sx={{
-                display: "flex",
-                gap: 2,
-                alignItems: "flex-end",
-                justifyContent: "center",
-              }}
+        <Paper
+          elevation={0}
+          sx={{
+            p: 4,
+            mb: 5,
+            maxWidth: 800,
+            mx: "auto",
+            borderRadius: 4,
+            border: "1px solid",
+            borderColor: "divider",
+            textAlign: "center",
+          }}
+        >
+          <Typography variant="h6" color="text.secondary">
+            Punkty:{" "}
+            <Typography
+              component="span"
+              variant="h2"
+              fontWeight="900"
+              color="secondary"
             >
-              <TextField
-                label="Nick"
-                variant="standard"
-                value={nick}
-                onChange={(e) => setNick(e.target.value)}
-              />
-              <Button
-                variant="contained"
-                size="small"
-                startIcon={<EditIcon />}
-                onClick={handleNickChange}
-                disabled={isSaving || nick === auth?.nickname}
+              {orders.length * 150} 💎
+            </Typography>
+          </Typography>
+
+          <Divider sx={{ my: 3 }} />
+
+          <Box
+            sx={{
+              display: "flex",
+              gap: 2,
+              justifyContent: "center",
+              alignItems: "flex-end",
+            }}
+          >
+            <TextField
+              label="Zmień Nick"
+              variant="standard"
+              value={nick}
+              onChange={(e) => setNick(e.target.value)}
+            />
+            <Button
+              variant="contained"
+              startIcon={<EditIcon />}
+              onClick={handleNickChange}
+              disabled={isSaving || nick === auth?.nickname}
+            >
+              Zapisz
+            </Button>
+          </Box>
+
+          {auth?.role === "admin" && (
+            <>
+              <Divider sx={{ my: 4 }}>PANEL ADMINISTRATORA</Divider>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 2,
+                  bgcolor: "rgba(255, 215, 0, 0.1)", 
+                  p: 3,
+                  borderRadius: 2,
+                  border: "1px solid gold",
+                  maxWidth: 400,
+                  mx: "auto",
+                }}
               >
-                {isSaving ? "Zapisywanie..." : "Zmień"}
-              </Button>
-            </Box>
-            {auth.role === "admin" && (
-              <>
-                <Divider sx={{ my: 2 }}>PANEL ADMINISTRATORA</Divider>
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    gap: 2,
-                    bgcolor: "rgba(255, 215, 0, 0.1)",
-                    p: 2,
-                    borderRadius: 2,
-                    border: "1px solid gold",
-                  }}
+                <Typography
+                  variant="body1"
+                  fontWeight="bold"
+                  sx={{ display: "flex", alignItems: "center", gap: 1 }}
                 >
-                  <Typography
-                    variant="body1"
-                    fontWeight="bold"
-                    sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                  <StarIcon color="warning" /> Zmień produkt miesiąca (Home)
+                </Typography>
+                <Box sx={{ display: "flex", gap: 2, alignItems: "flex-end" }}>
+                  <TextField
+                    hiddenLabel
+                    placeholder="ID"
+                    type="number"
+                    variant="outlined"
+                    size="small"
+                    value={adminProductId}
+                    onChange={(e) => setAdminProductId(e.target.value)}
+                    slotProps={{ htmlInput: { min: 1, max: 100 } }}
+                    sx={{ bgcolor: "background.paper" }}
+                  />
+                  <Button
+                    variant="contained"
+                    color="warning"
+                    onClick={handleProductChange}
+                    disabled={isAdminSaving}
                   >
-                    <StarIcon color="warning" /> Zmień produkt miesiąca (Home)
-                  </Typography>
-                  <Box sx={{ display: "flex", gap: 2, alignItems: "flex-end" }}>
-                    <TextField
-                      hiddenLabel
-                      placeholder="ID"
-                      type="number"
-                      variant="outlined"
-                      size="small"
-                      value={adminProductId}
-                      onChange={(e) => setAdminProductId(e.target.value)}
-                      slotProps={{ htmlInput: { min: 1, max: 100 } }}
-                    />
-                    <Button
-                      variant="contained"
-                      color="warning"
-                      onClick={handleProductChange}
-                      disabled={isAdminSaving}
-                    >
-                      Zapisz ID
-                    </Button>
-                  </Box>
+                    Zapisz ID
+                  </Button>
                 </Box>
-              </>
-            )}
-          </Stack>
-        </SectionPaper>
+              </Box>
+            </>
+          )}
+        </Paper>
 
-        <Grid container spacing={4}>
-          <Grid size={{ xs: 12, md: 6 }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", md: "row" },
+            gap: 4,
+          }}
+        >
+          <Box sx={{ flex: 1 }}>
             <Typography
               variant="h5"
               fontWeight="bold"
               gutterBottom
               sx={{ display: "flex", alignItems: "center", gap: 1 }}
             >
-              <ShoppingBagIcon color="primary" /> Zamówienia (
-              {MOCK_ORDERS.length})
+              <ShoppingBagIcon color="primary" /> Zamówienia ({orders.length})
             </Typography>
-
             <Stack spacing={2}>
-              {getVisibleItems(MOCK_ORDERS, showAllOrders).map((order) => (
-                <Card key={order.id} variant="outlined">
-                  <CardContent sx={{ py: 1.5, "&:last-child": { pb: 1.5 } }}>
-                    <Box display="flex" justifyContent="space-between" mb={1}>
-                      <Typography fontWeight="bold" variant="body1">
-                        {order.number}
+              {orders
+                .slice(0, showAllOrders ? undefined : 3)
+                .map((order: any) => (
+                  <Card
+                    key={order.id}
+                    variant="outlined"
+                    sx={{ borderRadius: 3 }}
+                  >
+                    <CardContent>
+                      <Box display="flex" justifyContent="space-between">
+                        <Typography fontWeight="bold">#{order.id}</Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {new Date(order.createdAt).toLocaleDateString()}
+                        </Typography>
+                      </Box>
+                      <Typography variant="body2" sx={{ mt: 1 }}>
+                        📦{" "}
+                        {order.OrderItems?.map((i: any) => i.title).join(
+                          ", "
+                        ) || "Brak pozycji"}
                       </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {order.date}
-                      </Typography>
-                    </Box>
-
-                    <Typography variant="body2" color="text.primary">
-                      📦 <b>Produkty:</b> {order.items.join(", ")}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              ))}
-
-              {MOCK_ORDERS.length > 3 && (
-                <Button
-                  onClick={() => setShowAllOrders(!showAllOrders)}
-                  endIcon={
-                    showAllOrders ? <ExpandLessIcon /> : <ExpandMoreIcon />
-                  }
-                  sx={{ alignSelf: "center" }}
-                >
-                  {showAllOrders
-                    ? "Zwiń listę"
-                    : `Pokaż pozostałe (${MOCK_ORDERS.length - 3})`}
-                </Button>
-              )}
-            </Stack>
-          </Grid>
-
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Typography
-              variant="h5"
-              fontWeight="bold"
-              gutterBottom
-              sx={{ display: "flex", alignItems: "center", gap: 1 }}
-            >
-              <RateReviewIcon color="secondary" /> Opinie ({MOCK_REVIEWS.length}
-              )
-            </Typography>
-
-            <Stack spacing={2}>
-              {getVisibleItems(MOCK_REVIEWS, showAllReviews).map((review) => (
-                <Card
-                  key={review.id}
-                  variant="outlined"
-                  sx={{ bgcolor: "background.default" }}
-                >
-                  <CardContent sx={{ py: 1.5, "&:last-child": { pb: 1.5 } }}>
-                    <Box display="flex" justifyContent="space-between">
                       <Typography
                         variant="subtitle2"
-                        color="primary"
-                        fontWeight="bold"
+                        sx={{ mt: 1, color: "primary.main" }}
                       >
-                        {review.product}
+                        Suma: {order.totalAmount} $
                       </Typography>
-                      <Typography variant="caption">
-                        ⭐ {review.rating}/5
-                      </Typography>
-                    </Box>
-                    <Typography
-                      variant="body2"
-                      fontStyle="italic"
-                      color="text.secondary"
-                      sx={{ mt: 0.5 }}
-                    >
-                      "{review.text}"
-                    </Typography>
-                  </CardContent>
-                </Card>
-              ))}
-
-              {MOCK_REVIEWS.length > 3 && (
+                    </CardContent>
+                  </Card>
+                ))}
+              {orders.length > 3 && (
                 <Button
-                  onClick={() => setShowAllReviews(!showAllReviews)}
-                  endIcon={
-                    showAllReviews ? <ExpandLessIcon /> : <ExpandMoreIcon />
-                  }
-                  sx={{ alignSelf: "center" }}
+                  onClick={() => setShowAllOrders(!showAllOrders)}
+                  sx={{ mt: 1 }}
                 >
-                  {showAllReviews ? "Zwiń opinie" : `Pokaż starsze opinie`}
+                  {showAllOrders ? "Zwiń" : "Pokaż wszystkie"}
                 </Button>
               )}
             </Stack>
-          </Grid>
-        </Grid>
+          </Box>
+
+          <Box sx={{ flex: 1 }}>
+            <Typography
+              variant="h5"
+              fontWeight="bold"
+              gutterBottom
+              sx={{ display: "flex", alignItems: "center", gap: 1 }}
+            >
+              <RateReviewIcon color="secondary" /> Opinie ({reviews.length})
+            </Typography>
+            <Stack spacing={2}>
+              {reviews
+                .slice(0, showAllReviews ? undefined : 3)
+                .map((review: any) => (
+                  <Card
+                    key={review.id}
+                    variant="outlined"
+                    sx={{ borderRadius: 3 }}
+                  >
+                    <CardContent>
+                      <Box
+                        display="flex"
+                        justifyContent="space-between"
+                        alignItems="center"
+                      >
+                        <Typography
+                          variant="subtitle2"
+                          color="primary"
+                          component={Link}
+                          to={`/productdetails/${review.productId}`}
+                          sx={{
+                            textDecoration: "none",
+                            fontWeight: "bold",
+                            "&:hover": { textDecoration: "underline" },
+                          }}
+                        >
+                          {productNames[review.productId] ||
+                            `Produkt ${review.productId}...`}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          sx={{ display: "flex", alignItems: "center" }}
+                        >
+                          ⭐ {review.rating}/5
+                        </Typography>
+                      </Box>
+                      <Typography
+                        variant="body2"
+                        fontStyle="italic"
+                        sx={{ mt: 1, color: "text.secondary" }}
+                      >
+                        "{review.comment}"
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                ))}
+              {reviews.length > 3 && (
+                <Button
+                  onClick={() => setShowAllReviews(!showAllReviews)}
+                  sx={{ mt: 1 }}
+                >
+                  {showAllReviews ? "Zwiń" : "Pokaż wszystkie"}
+                </Button>
+              )}
+            </Stack>
+          </Box>
+        </Box>
       </Container>
     </UserPageContainer>
   );

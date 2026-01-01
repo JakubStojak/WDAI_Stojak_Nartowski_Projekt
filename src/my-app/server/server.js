@@ -4,7 +4,6 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { Op } = require("sequelize");
 
 const sequelize = require("./database");
 const User = require("./models/User");
@@ -16,6 +15,10 @@ const OrderItem = require("./models/OrderItem");
 const Review = require("./models/Review");
 
 const app = express();
+app.use((req, res, next) => {
+  console.log(`Zapytanie do: ${req.method} ${req.url}`);
+  next();
+});
 
 app.use(express.json());
 app.use(cookieParser());
@@ -295,15 +298,17 @@ app.get("/api/cart", authenticateToken, async (req, res) => {
 
 app.post("/api/cart", authenticateToken, async (req, res) => {
   try {
-    const { product } = req.body;
+    const { product, quantity } = req.body; 
     const userId = req.user.id;
+    
+    const qtyToAdd = quantity && quantity > 0 ? parseInt(quantity) : 1;
 
     let cartItem = await CartItem.findOne({
       where: { UserId: userId, productId: product.id },
     });
 
     if (cartItem) {
-      cartItem.quantity += 1;
+      cartItem.quantity += qtyToAdd;
       await cartItem.save();
     } else {
       cartItem = await CartItem.create({
@@ -312,11 +317,60 @@ app.post("/api/cart", authenticateToken, async (req, res) => {
         title: product.title,
         price: product.price,
         thumbnail: product.thumbnail,
-        quantity: 1,
+        quantity: qtyToAdd,
       });
     }
 
     res.json({ message: "Dodano do koszyka", item: cartItem });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.put("/api/cart/:id", authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params; 
+    const { quantity } = req.body;
+    const userId = req.user.id;
+
+    if (!quantity || quantity < 1) {
+      return res.status(400).json({ message: "Ilość musi być większa od 0" });
+    }
+
+    const cartItem = await CartItem.findOne({
+      where: { id: id, UserId: userId }
+    });
+
+    if (!cartItem) {
+      return res.status(404).json({ message: "Produkt nie znaleziony w koszyku" });
+    }
+
+    cartItem.quantity = parseInt(quantity);
+    await cartItem.save();
+
+    res.json({ message: "Zaktualizowano ilość", item: cartItem });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete("/api/cart/:id", authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    const deleted = await CartItem.destroy({
+      where: { 
+        id: id, 
+        UserId: userId 
+      }
+    });
+
+    if (deleted) {
+      res.json({ message: "Produkt usunięty z koszyka" });
+    } else {
+      res.status(404).json({ message: "Produkt nie znaleziony" });
+    }
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -384,48 +438,33 @@ app.post("/api/orders", authenticateToken, async (req, res) => {
       .json({ message: "Zamówienie złożone pomyślnie", orderId: newOrder.id });
   } catch (error) {
     await transaction.rollback();
-    console.error("Błąd zamówienia:", error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// --- ZMODYFIKOWANY POST (Z DIAGNOSTYKĄ) ---
 app.post("/api/reviews", authenticateToken, async (req, res) => {
   try {
     const { productId, rating, comment } = req.body;
     const userId = req.user.id;
 
-    console.log("------------------------------------------------");
-    console.log("[POST REVIEW] Próba dodania opinii...");
-    console.log(`[POST REVIEW] Otrzymane productId (tekst): "${productId}"`);
-
     const productIdInt = parseInt(productId);
-    console.log(
-      `[POST REVIEW] productId po konwersji (liczba): ${productIdInt}`
-    );
 
-    // Sprawdzamy duplikat
     const existingReview = await Review.findOne({
       where: { UserId: userId, productId: productIdInt },
     });
 
     if (existingReview) {
-      console.log("[POST REVIEW] Błąd: Opinia już istnieje.");
       return res
         .status(400)
         .json({ message: "Już dodałeś opinię do tego produktu." });
     }
 
-    // Tworzymy
     const review = await Review.create({
       UserId: userId,
       productId: productIdInt,
       rating,
       comment,
     });
-    console.log(
-      `[POST REVIEW] Sukces! Utworzono opinię ID: ${review.id} dla produktu ID: ${review.productId}`
-    );
 
     const reviewWithUser = await Review.findByPk(review.id, {
       include: [{ model: User, attributes: ["nickname"] }],
@@ -433,24 +472,15 @@ app.post("/api/reviews", authenticateToken, async (req, res) => {
 
     res.status(201).json(reviewWithUser);
   } catch (error) {
-    console.error("[POST REVIEW] BŁĄD:", error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// --- ZMODYFIKOWANY GET (Z DIAGNOSTYKĄ) ---
 app.get("/api/reviews/:productId", async (req, res) => {
   try {
     const { productId } = req.params;
 
-    console.log("------------------------------------------------");
-    console.log("[GET REVIEW] Zapytanie o opinie...");
-    console.log(
-      `[GET REVIEW] Szukam opinii dla productId (z URL): "${productId}"`
-    );
-
     const productIdInt = parseInt(productId);
-    console.log(`[GET REVIEW] Szukam w bazie liczby: ${productIdInt}`);
 
     const reviews = await Review.findAll({
       where: { productId: productIdInt },
@@ -458,23 +488,40 @@ app.get("/api/reviews/:productId", async (req, res) => {
       order: [["createdAt", "DESC"]],
     });
 
-    console.log(
-      `[GET REVIEW] Wynik z bazy: znaleziono ${reviews.length} opinii.`
-    );
-    if (reviews.length > 0) {
-      console.log(
-        `[GET REVIEW] Przykładowa znaleziona opinia ma productId: ${reviews[0].productId}`
-      );
-    } else {
-      console.log(`[GET REVIEW] Baza zwróciła pustą tablicę.`);
-    }
-
     res.json(reviews);
   } catch (error) {
-    console.error("[GET REVIEW] BŁĄD:", error);
     res.status(500).json({ error: error.message });
   }
 });
+
+const router = express.Router();
+
+router.get("/my-orders", authenticateToken, async (req, res) => {
+  try {
+    const orders = await Order.findAll({
+      where: { UserId: req.user.id },
+      include: [OrderItem],
+      order: [["createdAt", "DESC"]],
+    });
+    res.json(orders);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.get("/my-reviews", authenticateToken, async (req, res) => {
+  try {
+    const reviews = await Review.findAll({
+      where: { UserId: req.user.id },
+      order: [["createdAt", "DESC"]],
+    });
+    res.json(reviews);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.use("/api", router);
 
 sequelize.sync({ force: false }).then(async () => {
   await createDefaultAdmins();

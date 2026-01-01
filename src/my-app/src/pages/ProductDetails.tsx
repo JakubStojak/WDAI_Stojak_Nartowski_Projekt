@@ -15,6 +15,7 @@ import {
   Rating,
   Avatar,
   Paper,
+  TextField,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -77,6 +78,8 @@ function ProductDetails() {
   const [dbReviews, setDbReviews] = useState<DatabaseReview[]>([]);
   const [loading, setLoading] = useState(true);
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
+  const [quantity, setQuantity] = useState<number>(1);
+  
   const { auth } = useAuth();
 
   const handleAddToCart = async (prod: any) => {
@@ -86,8 +89,8 @@ function ProductDetails() {
     }
 
     try {
-      await axiosPrivate.post("/cart", { product: prod });
-      alert("Dodano do koszyka!");
+      await axiosPrivate.post("/cart", { product: prod, quantity: quantity });
+      alert(`Dodano do koszyka! Ilość: ${quantity}`);
     } catch (error) {
       console.error(error);
       alert("Błąd podczas dodawania.");
@@ -126,9 +129,8 @@ function ProductDetails() {
         } else {
           setProduct(data);
         }
-        console.log("React: Pobieram opinie dla ID:", id);
+        
         const reviewsRes = await axios.get(`/reviews/${id}`);
-        console.log("React: Pobrane opinie:", reviewsRes.data);
         setDbReviews(reviewsRes.data);
       } catch (error) {
         console.error("Błąd połączenia:", error);
@@ -153,9 +155,6 @@ function ProductDetails() {
         <DetailCard sx={{ p: 4, textAlign: "center", maxWidth: 500 }}>
           <Typography variant="h5" color="error" gutterBottom>
             Nie znaleziono produktu!
-          </Typography>
-          <Typography variant="body2" color="text.secondary" paragraph>
-            Próbowano pobrać ID: <strong>{id}</strong>
           </Typography>
           <Button variant="contained" component={Link} to="/products">
             Powrót do listy
@@ -219,17 +218,30 @@ function ProductDetails() {
                     ${product.price}
                   </Typography>
 
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    size="large"
-                    fullWidth
-                    startIcon={<AddShoppingCartIcon />}
-                    onClick={() => handleAddToCart(product)}
-                    sx={{ py: 1.5, fontSize: "1.1rem" }}
-                  >
-                    Dodaj do koszyka
-                  </Button>
+                  <Stack direction="row" spacing={2} sx={{ mb: 0 }}>
+                    <TextField
+                        type="number"
+                        label="Ilość"
+                        value={quantity}
+                        onChange={(e) => {
+                            const val = parseInt(e.target.value);
+                            if (val > 0) setQuantity(val);
+                        }}
+                        slotProps={{ htmlInput: { min: 1 } }}
+                        sx={{ width: 80 }}
+                    />
+                    <Button
+                        type="submit"
+                        variant="contained"
+                        size="large"
+                        fullWidth
+                        startIcon={<AddShoppingCartIcon />}
+                        onClick={() => handleAddToCart(product)}
+                        sx={{ py: 1.5, fontSize: "1.1rem" }}
+                    >
+                        Do koszyka
+                    </Button>
+                  </Stack>
                 </Box>
               </Box>
             </Grid>
@@ -338,11 +350,6 @@ function ProductDetails() {
                       >
                         Ten produkt nie ma jeszcze opinii z naszego sklepu.
                       </Typography>
-                      {!auth?.accessToken && (
-                        <Typography variant="caption">
-                          Zaloguj się, aby dodać pierwszą opinię!
-                        </Typography>
-                      )}
                     </Box>
                   )}
                 </Box>
