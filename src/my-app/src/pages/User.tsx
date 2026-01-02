@@ -11,13 +11,16 @@ import {
   TextField,
   Divider,
   CircularProgress,
+  IconButton,
 } from "@mui/material";
 import { styled, useTheme } from "@mui/material/styles";
 import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 import RateReviewIcon from "@mui/icons-material/RateReview";
 import EditIcon from "@mui/icons-material/Edit";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
-import StarIcon from "@mui/icons-material/Star"; 
+import StarIcon from "@mui/icons-material/Star";
+import SupervisorAccountIcon from "@mui/icons-material/SupervisorAccount";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import { axiosPrivate } from "../api/axios";
@@ -56,9 +59,12 @@ function User({ changeTheme }: UserProps) {
 
   const [nick, setNick] = useState(auth?.nickname || "");
   const [isSaving, setIsSaving] = useState(false);
-  
+
   const [adminProductId, setAdminProductId] = useState("");
   const [isAdminSaving, setIsAdminSaving] = useState(false);
+
+  const [allReviews, setAllReviews] = useState<any[]>([]);
+  const [showAllAdminReviews, setShowAllAdminReviews] = useState(false);
 
   const [showAllOrders, setShowAllOrders] = useState(false);
   const [showAllReviews, setShowAllReviews] = useState(false);
@@ -70,59 +76,58 @@ function User({ changeTheme }: UserProps) {
 
   useEffect(() => {
     let isMounted = true;
+
     const fetchData = async () => {
       try {
-        const [ordersRes, reviewsRes] = await Promise.all([
-          axiosPrivate.get("/my-orders"),
-          axiosPrivate.get("/my-reviews"),
-        ]);
-        if (isMounted) {
-          setOrders(ordersRes.data || []);
-          setReviews(reviewsRes.data || []);
+        const resOrders = await axiosPrivate.get("/my-orders");
+        if (isMounted) setOrders(resOrders.data || []);
+
+        const resReviews = await axiosPrivate.get("/my-reviews");
+        if (isMounted) setReviews(resReviews.data || []);
+
+        if (auth?.role === "admin") {
+          const resAll = await axiosPrivate.get("/admin/all-reviews");
+          if (isMounted) setAllReviews(resAll.data || []);
         }
       } catch (err: any) {
-        console.error("Błąd:", err.response?.status);
+        console.error("Błąd pobierania danych");
       } finally {
         if (isMounted) setLoading(false);
       }
     };
+
     if (auth?.accessToken) fetchData();
     else navigate("/login");
+
     return () => {
       isMounted = false;
     };
   }, [auth, navigate]);
 
   useEffect(() => {
-    const fetchProductNames = async () => {
-      if (reviews.length === 0) return;
+    const fetchNames = async () => {
+      const myIds = reviews.map((r: any) => r.productId);
+      const adminIds = allReviews.map((r: any) => r.productId);
+      const uniqueIds = Array.from(new Set([...myIds, ...adminIds]));
 
-      const productIds = Array.from(
-        new Set(reviews.map((r: any) => r.productId))
-      );
-      const newNames: Record<number, string> = {};
+      const names: Record<number, string> = { ...productNames };
 
-      await Promise.all(
-        productIds.map(async (id) => {
+      for (const id of uniqueIds) {
+        if (!names[id]) {
           try {
             const res = await fetch(`https://dummyjson.com/products/${id}`);
             const data = await res.json();
-            newNames[id] = data.title;
-          } catch (error) {
-            console.error(`Błąd pobierania produktu ${id}`, error);
-            newNames[id] = `Produkt #${id}`;
+            names[id] = data.title;
+          } catch {
+            names[id] = "Produkt " + id;
           }
-        })
-      );
-
-      setProductNames(newNames);
+        }
+      }
+      setProductNames(names);
     };
 
-    if (reviews.length > 0) {
-      fetchProductNames();
-    }
-  }, [reviews]);
-
+    if (reviews.length > 0 || allReviews.length > 0) fetchNames();
+  }, [reviews, allReviews]);
 
   const handleNickChange = async () => {
     if (nick.length < 3) return alert("Nick za krótki!");
@@ -172,6 +177,21 @@ function User({ changeTheme }: UserProps) {
       alert("Błąd podczas zmiany produktu. Czy na pewno jesteś adminem?");
     } finally {
       setIsAdminSaving(false);
+    }
+  };
+
+  const handleDeleteReview = async (idReview: number) => {
+    if (!window.confirm("Usunąć tę opinię?")) return;
+
+    try {
+      await axiosPrivate.delete(`/reviews/${idReview}`);
+
+      setReviews(reviews.filter((r) => r.id !== idReview));
+      setAllReviews(allReviews.filter((r) => r.id !== idReview));
+
+      alert("Usunięto!");
+    } catch (err) {
+      alert("Błąd usuwania.");
     }
   };
 
@@ -272,7 +292,7 @@ function User({ changeTheme }: UserProps) {
                   flexDirection: "column",
                   alignItems: "center",
                   gap: 2,
-                  bgcolor: "rgba(255, 215, 0, 0.1)", 
+                  bgcolor: "rgba(255, 215, 0, 0.1)",
                   p: 3,
                   borderRadius: 2,
                   border: "1px solid gold",
@@ -308,6 +328,54 @@ function User({ changeTheme }: UserProps) {
                     Zapisz ID
                   </Button>
                 </Box>
+              </Box>
+              <Box sx={{ p: 2, border: "1px solid red", bgcolor: "#fff0f0" }}>
+                <Typography
+                  fontWeight="bold"
+                  sx={{ color: "error.main", mb: 2 }}
+                >
+                  <SupervisorAccountIcon /> Zarządzanie opiniami (
+                  {allReviews.length})
+                </Typography>
+
+                <Stack spacing={1}>
+                  {allReviews
+                    .slice(0, showAllAdminReviews ? undefined : 3)
+                    .map((rev) => (
+                      <Card
+                        key={rev.id}
+                        variant="outlined"
+                        sx={{ textAlign: "left" }}
+                      >
+                        <CardContent sx={{ py: 1, "&:last-child": { pb: 1 } }}>
+                          <Box display="flex" justifyContent="space-between">
+                            <Typography variant="caption" fontWeight="bold">
+                              {rev.User?.nickname || "Anonim"} (ID Produktu:{" "}
+                              {rev.productId})
+                            </Typography>
+                            <IconButton
+                              size="small"
+                              color="error"
+                              onClick={() => handleDeleteReview(rev.id)}
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </Box>
+                          <Typography variant="body2">{rev.comment}</Typography>
+                        </CardContent>
+                      </Card>
+                    ))}
+                </Stack>
+
+                {allReviews.length > 3 && (
+                  <Button
+                    onClick={() => setShowAllAdminReviews(!showAllAdminReviews)}
+                    sx={{ mt: 1 }}
+                    color="error"
+                  >
+                    {showAllAdminReviews ? "Ukryj" : "Pokaż wszystkie"}
+                  </Button>
+                )}
               </Box>
             </>
           )}
@@ -409,12 +477,18 @@ function User({ changeTheme }: UserProps) {
                           {productNames[review.productId] ||
                             `Produkt ${review.productId}...`}
                         </Typography>
-                        <Typography
-                          variant="caption"
-                          sx={{ display: "flex", alignItems: "center" }}
-                        >
-                          ⭐ {review.rating}/5
-                        </Typography>
+
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <Typography variant="caption">
+                            ⭐ {review.rating}/5
+                          </Typography>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleDeleteReview(review.id)}
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </Box>
                       </Box>
                       <Typography
                         variant="body2"

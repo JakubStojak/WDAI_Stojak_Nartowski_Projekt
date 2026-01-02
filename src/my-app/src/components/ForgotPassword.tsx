@@ -26,18 +26,20 @@ export default function ForgotPassword({
           onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
             event.preventDefault();
             handleClose();
+            alert(
+              "Jeśli podany email był poprawny, wysłaliśmy link do resetu hasła."
+            );
           },
           sx: { backgroundImage: "none" },
         },
       }}
     >
-      <DialogTitle>Reset password</DialogTitle>
+      <DialogTitle>Reset hasła</DialogTitle>
       <DialogContent
         sx={{ display: "flex", flexDirection: "column", gap: 2, width: "100%" }}
       >
         <DialogContentText>
-          Enter your account&apos;s email address, and we&apos;ll send you a
-          link to reset your password.
+          Podaj swój adres email, a prześlemy na niego link do resetu hasła.
         </DialogContentText>
         <OutlinedInput
           autoFocus
@@ -46,15 +48,15 @@ export default function ForgotPassword({
           id="email"
           name="email"
           label="Email address"
-          placeholder="Email address"
+          placeholder="Adres email"
           type="email"
           fullWidth
         />
       </DialogContent>
       <DialogActions sx={{ pb: 3, px: 3 }}>
-        <Button onClick={handleClose}>Cancel</Button>
+        <Button onClick={handleClose}>Anuluj</Button>
         <Button variant="contained" type="submit">
-          Continue
+          Kontynuuj
         </Button>
       </DialogActions>
     </Dialog>

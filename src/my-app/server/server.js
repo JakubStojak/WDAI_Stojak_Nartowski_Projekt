@@ -298,9 +298,9 @@ app.get("/api/cart", authenticateToken, async (req, res) => {
 
 app.post("/api/cart", authenticateToken, async (req, res) => {
   try {
-    const { product, quantity } = req.body; 
+    const { product, quantity } = req.body;
     const userId = req.user.id;
-    
+
     const qtyToAdd = quantity && quantity > 0 ? parseInt(quantity) : 1;
 
     let cartItem = await CartItem.findOne({
@@ -329,7 +329,7 @@ app.post("/api/cart", authenticateToken, async (req, res) => {
 
 app.put("/api/cart/:id", authenticateToken, async (req, res) => {
   try {
-    const { id } = req.params; 
+    const { id } = req.params;
     const { quantity } = req.body;
     const userId = req.user.id;
 
@@ -338,11 +338,13 @@ app.put("/api/cart/:id", authenticateToken, async (req, res) => {
     }
 
     const cartItem = await CartItem.findOne({
-      where: { id: id, UserId: userId }
+      where: { id: id, UserId: userId },
     });
 
     if (!cartItem) {
-      return res.status(404).json({ message: "Produkt nie znaleziony w koszyku" });
+      return res
+        .status(404)
+        .json({ message: "Produkt nie znaleziony w koszyku" });
     }
 
     cartItem.quantity = parseInt(quantity);
@@ -360,10 +362,10 @@ app.delete("/api/cart/:id", authenticateToken, async (req, res) => {
     const userId = req.user.id;
 
     const deleted = await CartItem.destroy({
-      where: { 
-        id: id, 
-        UserId: userId 
-      }
+      where: {
+        id: id,
+        UserId: userId,
+      },
     });
 
     if (deleted) {
@@ -520,6 +522,48 @@ router.get("/my-reviews", authenticateToken, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+app.delete("/api/reviews/:id", authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+    const userRole = req.user.role;
+
+    const review = await Review.findByPk(id);
+
+    if (!review) {
+      return res.status(404).json({ message: "Opinia nie znaleziona" });
+    }
+
+    if (review.UserId !== userId && userRole !== "admin") {
+      return res
+        .status(403)
+        .json({ message: "Brak uprawnień do usunięcia tej opinii" });
+    }
+
+    await review.destroy();
+    res.json({ message: "Opinia usunięta pomyślnie" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.get(
+  "/admin/all-reviews",
+  authenticateToken,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const reviews = await Review.findAll({
+        include: [{ model: User, attributes: ["nickname", "email"] }],
+        order: [["createdAt", "DESC"]],
+      });
+      res.json(reviews);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
 
 app.use("/api", router);
 
