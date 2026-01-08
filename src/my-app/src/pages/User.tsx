@@ -329,6 +329,7 @@ function User({ changeTheme }: UserProps) {
                   </Button>
                 </Box>
               </Box>
+              <br></br>
               <Box sx={{ p: 2, border: "1px solid red", bgcolor: "#fff0f0" }}>
                 <Typography
                   fontWeight="bold"

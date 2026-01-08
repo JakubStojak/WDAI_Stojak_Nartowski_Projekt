@@ -217,23 +217,6 @@ export default function Register(props: { disableCustomTheme?: boolean }) {
               Zarejestruj się
             </Button>
           </Box>
-          <Divider>lub</Divider>
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <Button
-              fullWidth
-              variant="outlined"
-              onClick={() => alert("Sign in with Google")}
-            >
-              Zarejestruj z Google
-            </Button>
-            <Button
-              fullWidth
-              variant="outlined"
-              onClick={() => alert("Sign in with Facebook")}
-            >
-              Zaloguj z Facebookiem
-            </Button>
-          </Box>
         </Card>
       </SignInContainer>
     </>
