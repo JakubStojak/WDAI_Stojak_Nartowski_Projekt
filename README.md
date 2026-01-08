@@ -17,7 +17,7 @@ Autorzy: Jakub Stojak, Adam Nartowski
 
 **Backend:**
 
-- **Node.js & Express ** - serwer aplikacji.
+- **Node.js & Express** - serwer aplikacji.
 - **SQLite3** - lekka baza danych plikowa.
 - **Sequelize** - ORM do komunikacji z bazą danych.
 - **Bezpieczeństwo i Autoryzacja:**
