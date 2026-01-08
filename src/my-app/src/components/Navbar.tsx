@@ -32,11 +32,11 @@ const Navbar = () => {
         )}
         {auth?.accessToken ? (
           <Button color="inherit" onClick={handleLogout}>
-            Logout
+            Wyloguj
           </Button>
         ) : (
           <Button color="inherit" component={Link} to="/login">
-            Login
+            Zaloguj
           </Button>
         )}
       </Toolbar>
