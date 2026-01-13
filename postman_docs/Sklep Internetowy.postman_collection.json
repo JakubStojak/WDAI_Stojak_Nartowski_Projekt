@@ -1,0 +1,2082 @@
+{
+	"info": {
+		"_postman_id": "1af80c06-4874-42f6-aaee-704194990b7b",
+		"name": "Sklep Internetowy",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "50957961",
+		"_collection_link": "https://adam7nts-1085819.postman.co/workspace/Adam-Nartowski's-Workspace~64385264-0a2b-4be4-88bf-417a2a4d9f5e/collection/50957961-1af80c06-4874-42f6-aaee-704194990b7b?action=share&source=collection_link&creator=50957961"
+	},
+	"item": [
+		{
+			"name": "Rejestracja",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"klient@test.com\",\r\n    \"password\": \"password123\",\r\n    \"nickname\": \"Klient\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/register",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"register"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Błąd rejestracji",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"klient@test.com\",\r\n    \"password\": \"password123\",\r\n    \"nickname\": \"Klient\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/register",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"register"
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "http://localhost:3000"
+						},
+						{
+							"key": "Vary",
+							"value": "Origin"
+						},
+						{
+							"key": "Access-Control-Allow-Credentials",
+							"value": "true"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "27"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"1b-A8wPmDYJ7M3QaI3kavBU0THuAuw\""
+						},
+						{
+							"key": "Date",
+							"value": "Tue, 13 Jan 2026 22:33:27 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"Email zajęty\"\n}"
+				},
+				{
+					"name": "Pomyślna rejestracja",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"klient2@test.com\",\r\n    \"password\": \"password1234\",\r\n    \"nickname\": \"KlientNowy\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/register",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"register"
+							]
+						}
+					},
+					"status": "Created",
+					"code": 201,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "http://localhost:3000"
+						},
+						{
+							"key": "Vary",
+							"value": "Origin"
+						},
+						{
+							"key": "Access-Control-Allow-Credentials",
+							"value": "true"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "35"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"23-AFptvzYt2TmzryjutMQYth8sFV0\""
+						},
+						{
+							"key": "Date",
+							"value": "Tue, 13 Jan 2026 22:34:22 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"Użytkownik utworzony\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Logowanie",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();\r",
+							"pm.collectionVariables.set(\"token\", jsonData.accessToken);"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"adam@admin.com\",\r\n    \"password\": \"admin123\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/login",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"login"
+					]
+				},
+				"description": "Zwraca accessToken i ustawia ciasteczko z refreshToken-em"
+			},
+			"response": [
+				{
+					"name": "Pomyślne logowanie",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"klient@test.com\",\r\n    \"password\": \"password123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/login",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"login"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "http://localhost:3000"
+						},
+						{
+							"key": "Vary",
+							"value": "Origin"
+						},
+						{
+							"key": "Access-Control-Allow-Credentials",
+							"value": "true"
+						},
+						{
+							"key": "Set-Cookie",
+							"value": "refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiaWF0IjoxNzY4MzQzODA3LCJleHAiOjE3Njg5NDg2MDd9.lyt7TLg57GscrWgh7OG4-4QUB9zEobyLIhk9kmUSrLA; Path=/; Expires=Tue, 20 Jan 2026 22:36:47 GMT; HttpOnly; SameSite=Strict"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "331"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"14b-SHtccu0FOBR+DjqupFJxvxKPF8o\""
+						},
+						{
+							"key": "Date",
+							"value": "Tue, 13 Jan 2026 22:36:47 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"id\": 6,\n    \"email\": \"klient@test.com\",\n    \"role\": \"user\",\n    \"nickname\": \"Klient2\",\n    \"preference_theme\": \"dark\",\n    \"accessToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiZW1haWwiOiJrbGllbnRAdGVzdC5jb20iLCJyb2xlIjoidXNlciIsIm5pY2tuYW1lIjoiS2xpZW50MiIsImlhdCI6MTc2ODM0MzgwNywiZXhwIjoxNzY4MzQ0NzA3fQ.quD1Kb0K_KGC5pww_YaQvZXY_88K7RI04wfG11t92Lo\"\n}"
+				},
+				{
+					"name": "Błąd logowania",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"klient@test.com\",\r\n    \"password\": \"password1\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/login",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"login"
+							]
+						}
+					},
+					"status": "Unauthorized",
+					"code": 401,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "http://localhost:3000"
+						},
+						{
+							"key": "Vary",
+							"value": "Origin"
+						},
+						{
+							"key": "Access-Control-Allow-Credentials",
+							"value": "true"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "39"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"27-Raui6nFTp6sQORVSmwhc8SXNoGI\""
+						},
+						{
+							"key": "Date",
+							"value": "Tue, 13 Jan 2026 22:45:06 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"Błędny email lub hasło\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Wylogowanie",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/logout",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"logout"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Pomyślne wylogowanie",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/logout",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"logout"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "http://localhost:3000"
+						},
+						{
+							"key": "Vary",
+							"value": "Origin"
+						},
+						{
+							"key": "Access-Control-Allow-Credentials",
+							"value": "true"
+						},
+						{
+							"key": "Set-Cookie",
+							"value": "refreshToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "24"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"18-BPAmrbeTVmuRNUKCVQlopFxXVZ8\""
+						},
+						{
+							"key": "Date",
+							"value": "Tue, 13 Jan 2026 22:31:58 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"Wylogowano\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Odświeżanie tokenu",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();\r",
+							"pm.collectionVariables.set(\"token\", jsonData.accessToken);"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/refresh-token",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"refresh-token"
+					]
+				},
+				"description": "Wymaga aktywnego ciasteczka"
+			},
+			"response": [
+				{
+					"name": "Pomyślne odświeżenie",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/refresh-token",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"refresh-token"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "http://localhost:3000"
+						},
+						{
+							"key": "Vary",
+							"value": "Origin"
+						},
+						{
+							"key": "Access-Control-Allow-Credentials",
+							"value": "true"
+						},
+						{
+							"key": "Set-Cookie",
+							"value": "refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiaWF0IjoxNzY4MzQ0MzI2LCJleHAiOjE3Njg5NDkxMjZ9.OMKyZjJijp5Uf58Q5rm4aeUrK_K-Gm_LSo5GZWOWRvo; Path=/; Expires=Tue, 20 Jan 2026 22:45:26 GMT; HttpOnly; SameSite=Strict"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "331"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"14b-6sRlRGkZq9WUnYdplhWRVn9BRs0\""
+						},
+						{
+							"key": "Date",
+							"value": "Tue, 13 Jan 2026 22:45:26 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"accessToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiZW1haWwiOiJrbGllbnRAdGVzdC5jb20iLCJyb2xlIjoidXNlciIsIm5pY2tuYW1lIjoiS2xpZW50MiIsImlhdCI6MTc2ODM0NDMyNiwiZXhwIjoxNzY4MzQ1MjI2fQ.2XU5g2XOD46AeYNlFU8gKVSRNZBEr7A-JnEbE4MhrI4\",\n    \"id\": 6,\n    \"email\": \"klient@test.com\",\n    \"role\": \"user\",\n    \"nickname\": \"Klient2\",\n    \"preference_theme\": \"dark\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Zmiana nikcu",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"nickname\": \"Klient2\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/change-nickname",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"change-nickname"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Pomyślna zmiana",
+					"originalRequest": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nickname\": \"FajnyKlient\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/change-nickname",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"change-nickname"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "http://localhost:3000"
+						},
+						{
+							"key": "Vary",
+							"value": "Origin"
+						},
+						{
+							"key": "Access-Control-Allow-Credentials",
+							"value": "true"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "64"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"40-KNMDjEtd9vct/STlkA5i386ujjc\""
+						},
+						{
+							"key": "Date",
+							"value": "Tue, 13 Jan 2026 22:47:06 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"Nick zmieniony pomyślnie\",\n    \"nickname\": \"FajnyKlient\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Pobieranie produktu miesiąca",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/product-of-month",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"product-of-month"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Pobieranie produktu miesiąca",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/product-of-month",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"product-of-month"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "",
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "http://localhost:3000"
+						},
+						{
+							"key": "Vary",
+							"value": "Origin"
+						},
+						{
+							"key": "Access-Control-Allow-Credentials",
+							"value": "true"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "11"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"b-9eZ/pNw2/T1NjlD+N13wl+XvZwU\""
+						},
+						{
+							"key": "Date",
+							"value": "Tue, 13 Jan 2026 22:47:30 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"id\": \"10\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Ustawianie produktu miesiąca (admin)",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": 15\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/product-of-month",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"product-of-month"
+					]
+				},
+				"description": "Wymaga roli admina"
+			},
+			"response": [
+				{
+					"name": "Ustawianie produktu miesiąca (admin)",
+					"originalRequest": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\": 15\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/product-of-month",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"product-of-month"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "",
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "http://localhost:3000"
+						},
+						{
+							"key": "Vary",
+							"value": "Origin"
+						},
+						{
+							"key": "Access-Control-Allow-Credentials",
+							"value": "true"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "54"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"36-j3/JHLIymt9MV4yV+vqtcRoNq7E\""
+						},
+						{
+							"key": "Date",
+							"value": "Tue, 13 Jan 2026 22:48:54 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"Zaktualizowano produkt miesiąca\",\n    \"id\": 15\n}"
+				}
+			]
+		},
+		{
+			"name": "Pobieranie koszyka",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/cart",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"cart"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Pobieranie koszyka",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/cart",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"cart"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "",
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "http://localhost:3000"
+						},
+						{
+							"key": "Vary",
+							"value": "Origin"
+						},
+						{
+							"key": "Access-Control-Allow-Credentials",
+							"value": "true"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "287"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"11f-+jeFWCnXnr2o3oEE/LSktwnVNEI\""
+						},
+						{
+							"key": "Date",
+							"value": "Tue, 13 Jan 2026 22:49:08 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "[\n    {\n        \"id\": 7,\n        \"productId\": 2,\n        \"title\": \"Eyeshadow Palette with Mirror\",\n        \"price\": 19.99,\n        \"thumbnail\": \"https://cdn.dummyjson.com/product-images/beauty/eyeshadow-palette-with-mirror/thumbnail.webp\",\n        \"quantity\": 1,\n        \"createdAt\": \"2026-01-09T13:26:50.816Z\",\n        \"updatedAt\": \"2026-01-09T13:26:50.816Z\",\n        \"UserId\": 3\n    }\n]"
+				}
+			]
+		},
+		{
+			"name": "Dodawanie do koszyka",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"product\": {\r\n        \"id\": 1,\r\n        \"title\": \"Essence Mascara Lash Princess\",\r\n        \"prince\": 9.99,\r\n        \"thumbnail\": \"https://cdn.dummyjson.com/products/image/beauty/Essence%20Mascara%20Lash%20Princess.jpg\"\r\n    },\r\n    \"quantity\": 2\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/cart",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"cart"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Dodawanie do koszyka",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"product\": {\r\n        \"id\": 1,\r\n        \"title\": \"Essence Mascara Lash Princess\",\r\n        \"price\": 9.99,\r\n        \"thumbnail\": \"https://cdn.dummyjson.com/products/image/beauty/Essence%20Mascara%20Lash%20Princess.jpg\"\r\n    },\r\n    \"quantity\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/cart",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"cart"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "",
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "http://localhost:3000"
+						},
+						{
+							"key": "Vary",
+							"value": "Origin"
+						},
+						{
+							"key": "Access-Control-Allow-Credentials",
+							"value": "true"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "318"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"13e-gmMaB0Rd/llTf/dBycWiH6c11Q4\""
+						},
+						{
+							"key": "Date",
+							"value": "Tue, 13 Jan 2026 22:49:19 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"Dodano do koszyka\",\n    \"item\": {\n        \"id\": 9,\n        \"UserId\": 3,\n        \"productId\": 1,\n        \"title\": \"Essence Mascara Lash Princess\",\n        \"price\": 9.99,\n        \"thumbnail\": \"https://cdn.dummyjson.com/products/image/beauty/Essence%20Mascara%20Lash%20Princess.jpg\",\n        \"quantity\": 2,\n        \"updatedAt\": \"2026-01-13T22:49:19.276Z\",\n        \"createdAt\": \"2026-01-13T22:49:19.276Z\"\n    }\n}"
+				}
+			]
+		},
+		{
+			"name": "Zmienianie ilości produktu w koszyku",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"quantity\": 11\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/cart/8",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"cart",
+						"8"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Zmienianie ilości produktu w koszyku",
+					"originalRequest": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"quantity\": 11\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/cart/9",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"cart",
+								"9"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "",
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "http://localhost:3000"
+						},
+						{
+							"key": "Vary",
+							"value": "Origin"
+						},
+						{
+							"key": "Access-Control-Allow-Credentials",
+							"value": "true"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "324"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"144-RY1uviA+3J2kNUD78gposMBT20w\""
+						},
+						{
+							"key": "Date",
+							"value": "Tue, 13 Jan 2026 22:49:40 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"Zaktualizowano ilość\",\n    \"item\": {\n        \"id\": 9,\n        \"productId\": 1,\n        \"title\": \"Essence Mascara Lash Princess\",\n        \"price\": 9.99,\n        \"thumbnail\": \"https://cdn.dummyjson.com/products/image/beauty/Essence%20Mascara%20Lash%20Princess.jpg\",\n        \"quantity\": 11,\n        \"createdAt\": \"2026-01-13T22:49:19.276Z\",\n        \"updatedAt\": \"2026-01-13T22:49:40.412Z\",\n        \"UserId\": 3\n    }\n}"
+				}
+			]
+		},
+		{
+			"name": "Usuwanie produktu z koszyka",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/cart/8",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"cart",
+						"8"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Usuwanie produktu z koszyka",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/cart/9",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"cart",
+								"9"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "",
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "http://localhost:3000"
+						},
+						{
+							"key": "Vary",
+							"value": "Origin"
+						},
+						{
+							"key": "Access-Control-Allow-Credentials",
+							"value": "true"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "41"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"29-Cm2EnLfbIG5lXc5eZt/cfxngPio\""
+						},
+						{
+							"key": "Date",
+							"value": "Tue, 13 Jan 2026 22:50:09 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"Produkt usunięty z koszyka\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Czyszczenie koszyka",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/cart",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"cart"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Czyszczenie koszyka",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/cart",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"cart"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "",
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "http://localhost:3000"
+						},
+						{
+							"key": "Vary",
+							"value": "Origin"
+						},
+						{
+							"key": "Access-Control-Allow-Credentials",
+							"value": "true"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "33"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"21-b7CfQbXXv9XE8U/9fxnW1B/oXLM\""
+						},
+						{
+							"key": "Date",
+							"value": "Tue, 13 Jan 2026 22:50:20 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"Koszyk wyczyszczony\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Składanie zamówienia",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/orders",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"orders"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Składanie zamówienia",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/orders",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"orders"
+							]
+						}
+					},
+					"status": "Created",
+					"code": 201,
+					"_postman_previewlanguage": "",
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "http://localhost:3000"
+						},
+						{
+							"key": "Vary",
+							"value": "Origin"
+						},
+						{
+							"key": "Access-Control-Allow-Credentials",
+							"value": "true"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "58"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"3a-8dga9qp1RqmXQgp8d4EPi0lM8CY\""
+						},
+						{
+							"key": "Date",
+							"value": "Tue, 13 Jan 2026 22:50:37 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"Zamówienie złożone pomyślnie\",\n    \"orderId\": 5\n}"
+				}
+			]
+		},
+		{
+			"name": "Pobieranie historii zamówień",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/my-orders",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"my-orders"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Pobieranie historii zamówień",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/my-orders",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"my-orders"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "",
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "http://localhost:3000"
+						},
+						{
+							"key": "Vary",
+							"value": "Origin"
+						},
+						{
+							"key": "Access-Control-Allow-Credentials",
+							"value": "true"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "415"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"19f-iVP2pzg9BKc2a1NYVJl1AwR6R78\""
+						},
+						{
+							"key": "Date",
+							"value": "Tue, 13 Jan 2026 22:50:48 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "[\n    {\n        \"id\": 5,\n        \"totalAmount\": 19.98,\n        \"createdAt\": \"2026-01-13T22:50:37.349Z\",\n        \"updatedAt\": \"2026-01-13T22:50:37.349Z\",\n        \"UserId\": 3,\n        \"OrderItems\": [\n            {\n                \"id\": 7,\n                \"productId\": 1,\n                \"title\": \"Essence Mascara Lash Princess\",\n                \"price\": 9.99,\n                \"quantity\": 2,\n                \"thumbnail\": \"https://cdn.dummyjson.com/products/image/beauty/Essence%20Mascara%20Lash%20Princess.jpg\",\n                \"createdAt\": \"2026-01-13T22:50:37.370Z\",\n                \"updatedAt\": \"2026-01-13T22:50:37.370Z\",\n                \"OrderId\": 5\n            }\n        ]\n    }\n]"
+				}
+			]
+		},
+		{
+			"name": "Dodawanie opinii",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"productId\": 1,\r\n    \"rating\": 5,\r\n    \"comment\": \"bardzo fajne\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/reviews",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"reviews"
+					]
+				},
+				"description": "Użytkownik moze dodać tylko jedną opinię dla danego produktu"
+			},
+			"response": [
+				{
+					"name": "Dodawanie opinii",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"productId\": 1,\r\n    \"rating\": 5,\r\n    \"comment\": \"bardzo fajne\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/reviews",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"reviews"
+							]
+						}
+					},
+					"status": "Created",
+					"code": 201,
+					"_postman_previewlanguage": "",
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "http://localhost:3000"
+						},
+						{
+							"key": "Vary",
+							"value": "Origin"
+						},
+						{
+							"key": "Access-Control-Allow-Credentials",
+							"value": "true"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "175"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"af-Glkmg8vT8XVuCnfOAfdZcIOnnuw\""
+						},
+						{
+							"key": "Date",
+							"value": "Tue, 13 Jan 2026 22:50:58 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"id\": 12,\n    \"productId\": 1,\n    \"rating\": 5,\n    \"comment\": \"bardzo fajne\",\n    \"createdAt\": \"2026-01-13T22:50:58.404Z\",\n    \"updatedAt\": \"2026-01-13T22:50:58.404Z\",\n    \"UserId\": 3,\n    \"User\": {\n        \"nickname\": \"Adam\"\n    }\n}"
+				}
+			]
+		},
+		{
+			"name": "Pobieranie opinii danego produktu",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/reviews/1",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"reviews",
+						"1"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Pobieranie opinii danego produktu",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/reviews/1",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"reviews",
+								"1"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "",
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "http://localhost:3000"
+						},
+						{
+							"key": "Vary",
+							"value": "Origin"
+						},
+						{
+							"key": "Access-Control-Allow-Credentials",
+							"value": "true"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "177"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"b1-Q30mKaaHUTbK9Pe1W2v293PizSM\""
+						},
+						{
+							"key": "Date",
+							"value": "Tue, 13 Jan 2026 22:51:09 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "[\n    {\n        \"id\": 12,\n        \"productId\": 1,\n        \"rating\": 5,\n        \"comment\": \"bardzo fajne\",\n        \"createdAt\": \"2026-01-13T22:50:58.404Z\",\n        \"updatedAt\": \"2026-01-13T22:50:58.404Z\",\n        \"UserId\": 3,\n        \"User\": {\n            \"nickname\": \"Adam\"\n        }\n    }\n]"
+				}
+			]
+		},
+		{
+			"name": "Pobranie opinii użytkownika",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/my-reviews",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"my-reviews"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Pobranie opinii użytkownika",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/my-reviews",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"my-reviews"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "",
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "http://localhost:3000"
+						},
+						{
+							"key": "Vary",
+							"value": "Origin"
+						},
+						{
+							"key": "Access-Control-Allow-Credentials",
+							"value": "true"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "302"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"12e-Uc4kvGCgtCOIDYxbW3wHYjZUu1U\""
+						},
+						{
+							"key": "Date",
+							"value": "Tue, 13 Jan 2026 22:51:19 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "[\n    {\n        \"id\": 12,\n        \"productId\": 1,\n        \"rating\": 5,\n        \"comment\": \"bardzo fajne\",\n        \"createdAt\": \"2026-01-13T22:50:58.404Z\",\n        \"updatedAt\": \"2026-01-13T22:50:58.404Z\",\n        \"UserId\": 3\n    },\n    {\n        \"id\": 10,\n        \"productId\": 18,\n        \"rating\": 5,\n        \"comment\": \"bardzo smaczne\",\n        \"createdAt\": \"2026-01-08T11:29:13.749Z\",\n        \"updatedAt\": \"2026-01-08T11:29:13.749Z\",\n        \"UserId\": 3\n    }\n]"
+				}
+			]
+		},
+		{
+			"name": "Pobieranie wszystkich opinii (admin)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/admin/all-reviews",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"admin",
+						"all-reviews"
+					]
+				},
+				"description": "Wymaga roli admina"
+			},
+			"response": [
+				{
+					"name": "Brak uprawnień admina",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/admin/all-reviews",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"admin",
+								"all-reviews"
+							]
+						}
+					},
+					"status": "Forbidden",
+					"code": 403,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "http://localhost:3000"
+						},
+						{
+							"key": "Vary",
+							"value": "Origin"
+						},
+						{
+							"key": "Access-Control-Allow-Credentials",
+							"value": "true"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "49"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"31-bpm2a7pcIE6GSatOMiGf+w+BsH8\""
+						},
+						{
+							"key": "Date",
+							"value": "Tue, 13 Jan 2026 22:25:54 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"Wymagane uprawnienia administratora\"\n}"
+				},
+				{
+					"name": "Pobieranie wszystkich opinii (admin)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/admin/all-reviews",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"admin",
+								"all-reviews"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "",
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "http://localhost:3000"
+						},
+						{
+							"key": "Vary",
+							"value": "Origin"
+						},
+						{
+							"key": "Access-Control-Allow-Credentials",
+							"value": "true"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "995"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"3e3-1PRg5CbFWTCOp7uQ5IROqfqZdKE\""
+						},
+						{
+							"key": "Date",
+							"value": "Tue, 13 Jan 2026 22:52:03 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "[\n    {\n        \"id\": 12,\n        \"productId\": 1,\n        \"rating\": 5,\n        \"comment\": \"bardzo fajne\",\n        \"createdAt\": \"2026-01-13T22:50:58.404Z\",\n        \"updatedAt\": \"2026-01-13T22:50:58.404Z\",\n        \"UserId\": 3,\n        \"User\": {\n            \"nickname\": \"Adam\",\n            \"email\": \"adam@admin.com\"\n        }\n    },\n    {\n        \"id\": 10,\n        \"productId\": 18,\n        \"rating\": 5,\n        \"comment\": \"bardzo smaczne\",\n        \"createdAt\": \"2026-01-08T11:29:13.749Z\",\n        \"updatedAt\": \"2026-01-08T11:29:13.749Z\",\n        \"UserId\": 3,\n        \"User\": {\n            \"nickname\": \"Adam\",\n            \"email\": \"adam@admin.com\"\n        }\n    },\n    {\n        \"id\": 8,\n        \"productId\": 10,\n        \"rating\": 5,\n        \"comment\": \"super\",\n        \"createdAt\": \"2026-01-03T19:24:27.463Z\",\n        \"updatedAt\": \"2026-01-03T19:24:27.463Z\",\n        \"UserId\": 2,\n        \"User\": {\n            \"nickname\": \"Kuba\",\n            \"email\": \"kuba@admin.com\"\n        }\n    },\n    {\n        \"id\": 6,\n        \"productId\": 100,\n        \"rating\": 3,\n        \"comment\": \"są okej\\n\",\n        \"createdAt\": \"2026-01-03T09:25:38.477Z\",\n        \"updatedAt\": \"2026-01-03T09:25:38.477Z\",\n        \"UserId\": 5,\n        \"User\": {\n            \"nickname\": \"Test\",\n            \"email\": \"test@test.com\"\n        }\n    },\n    {\n        \"id\": 5,\n        \"productId\": 100,\n        \"rating\": 5,\n        \"comment\": \"Super.\",\n        \"createdAt\": \"2026-01-03T09:24:10.044Z\",\n        \"updatedAt\": \"2026-01-03T09:24:10.044Z\",\n        \"UserId\": 2,\n        \"User\": {\n            \"nickname\": \"Kuba\",\n            \"email\": \"kuba@admin.com\"\n        }\n    }\n]"
+				}
+			]
+		},
+		{
+			"name": "Usuwanie opinii",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/reviews/11",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"reviews",
+						"11"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Usuwanie opinii",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/reviews/12",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"reviews",
+								"12"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "",
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "http://localhost:3000"
+						},
+						{
+							"key": "Vary",
+							"value": "Origin"
+						},
+						{
+							"key": "Access-Control-Allow-Credentials",
+							"value": "true"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "41"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"29-wZ6ix88koOQ0T264PTiu8RIpC34\""
+						},
+						{
+							"key": "Date",
+							"value": "Tue, 13 Jan 2026 22:52:31 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"Opinia usunięta pomyślnie\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Zmienianie motywu",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"theme\": \"dark\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/change-theme",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"change-theme"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Zmienianie motywu",
+					"originalRequest": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"theme\": \"dark\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/change-theme",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"change-theme"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "",
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "http://localhost:3000"
+						},
+						{
+							"key": "Vary",
+							"value": "Origin"
+						},
+						{
+							"key": "Access-Control-Allow-Credentials",
+							"value": "true"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "43"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"2b-EFQVnHmFkXjezF51qehtWuWM1U8\""
+						},
+						{
+							"key": "Date",
+							"value": "Tue, 13 Jan 2026 22:30:34 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"Motyw zapisany\",\n    \"theme\": \"dark\"\n}"
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "url",
+			"value": ""
+		},
+		{
+			"key": "token",
+			"value": ""
+		}
+	]
+}
