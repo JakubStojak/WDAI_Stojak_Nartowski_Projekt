@@ -1,9 +1,10 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:3003/api";
+const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3003';
 
 export default axios.create({
   baseURL: BASE_URL,
+  withCredentials: true,
 });
 
 export const axiosPrivate = axios.create({
@@ -20,7 +21,7 @@ export const setAccessToken = (token: string) => {
 
 axiosPrivate.interceptors.request.use(
   (config) => {
-    if (accessToken) {
+    if (accessToken && config.headers) {
       config.headers["Authorization"] = `Bearer ${accessToken}`;
     }
     return config;
@@ -34,12 +35,13 @@ axiosPrivate.interceptors.response.use(
     const prevRequest = error.config;
     if (
       (error.response?.status === 403 || error.response?.status === 401) &&
+      prevRequest &&
       !prevRequest._retry
     ) {
       prevRequest._retry = true;
       try {
         const response = await axios.post(
-          `${BASE_URL}/refresh-token`,
+          `${BASE_URL}/api/refresh-token`,
           {},
           {
             withCredentials: true,
@@ -48,9 +50,12 @@ axiosPrivate.interceptors.response.use(
         const newAccessToken = response.data.accessToken;
         setAccessToken(newAccessToken);
 
-        prevRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
+        if (prevRequest.headers) {
+          prevRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
+        }
         return axiosPrivate(prevRequest);
       } catch (err) {
+        setAccessToken("");
         return Promise.reject(err);
       }
     }

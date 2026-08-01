@@ -14,6 +14,8 @@ const Order = require("./models/Order");
 const OrderItem = require("./models/OrderItem");
 const Review = require("./models/Review");
 
+const PORT = process.env.PORT || 3003;
+
 const app = express();
 app.use((req, res, next) => {
   console.log(`Zapytanie do: ${req.method} ${req.url}`);
@@ -24,7 +26,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: true, 
     credentials: true,
   })
 );
@@ -57,12 +59,12 @@ const generateRefreshToken = async (user) => {
 };
 
 const setTokenCookie = (res, token) => {
-  const cookieOptions = {
+  res.cookie("refreshToken", token, {
     httpOnly: true,
     expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-    sameSite: "strict",
-  };
-  res.cookie("refreshToken", token, cookieOptions);
+    secure: true,
+    sameSite: "none",
+  });
 };
 
 const authenticateToken = (req, res, next) => {
@@ -570,7 +572,7 @@ app.use("/api", router);
 sequelize.sync({ force: false }).then(async () => {
   await createDefaultAdmins();
   console.log("Baza danych zsynchronizowana.");
-  app.listen(process.env.PORT, () => {
-    console.log(`Serwer działa na porcie ${process.env.PORT}`);
+  app.listen(PORT, () => {
+    console.log(`Serwer działa na porcie ${PORT}`);
   });
 });
