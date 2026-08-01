@@ -4,6 +4,8 @@ A web application project developed for the **Introduction to Web Applications**
 
 **Authors:** Jakub Stojak, Adam Nartowski
 
+The project is live and entirely useable at: https://ecommerce-website-project-azure.vercel.app/
+
 ---
 
 ## Tech Stack & Libraries
@@ -40,6 +42,7 @@ The project consists of two separate modules (Frontend and Backend) that require
 ```bash
 cd src/my-app
 npm install
+```
 
 
 **Backend:**
