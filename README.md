@@ -1,72 +1,68 @@
-# WDAI_Stojak_Nartowski_Projekt
+# ecommerce_website_project
 
-Projekt na potrzeby przedmiotu Wprowadzenie Do Aplikacji Internetowych, Informatyka AGH.
-Autorzy: Jakub Stojak, Adam Nartowski
+A web application project developed for the **Introduction to Web Applications** course at **AGH University of Science and Technology**.
 
----
-
-# Technologie i Biblioteki
-
-**Frontend:**
-
-- **[React](https://react.dev/)** - biblioteka interfejsu.
-- **[TypeScript](https://www.typescriptlang.org/)** - statyczne typowanie.
-- **[Material UI (MUI)](https://mui.com/)** - biblioteka komponentów.
-- **React Router** - obsługa nawigacji (routingu).
-- **Axios** - obsługa zapytań HTTP do backendu.
-
-**Backend:**
-
-- **Node.js & Express** - serwer aplikacji.
-- **SQLite3** - lekka baza danych plikowa.
-- **Sequelize** - ORM do komunikacji z bazą danych.
-- **Bezpieczeństwo i Autoryzacja:**
-  - **bcrypt** - haszowanie haseł.
-  - **JWT (JSON Web Token)** - generowanie tokenów dostępu.
-  - **cookie-parser** - obsługa tokenów przesyłanych w ciasteczkach.
-  - **CORS** - konfiguracja dostępu dla frontendu.
-
-Produkty pobierane są z zewnętrznego API: [https://dummyjson.com/products](https://dummyjson.com/products).
+**Authors:** Jakub Stojak, Adam Nartowski
 
 ---
 
-# Setup i Instalacja
+## Tech Stack & Libraries
 
-Aby uruchomić projekt lokalnie, należy wykonać poniższe kroki.
+### **Frontend**
+* **[React](https://react.dev/)** – UI library.
+* **[TypeScript](https://www.typescriptlang.org/)** – Static typing for robust code.
+* **[Material UI (MUI)](https://mui.com/)** – Component library for professional design.
+* **React Router** – Client-side navigation management.
+* **Axios** – HTTP client for API communication.
 
-### 1. Klonowanie i instalacja zależności
+### **Backend**
+* **Node.js & Express** – Server-side environment and framework.
+* **SQLite3** – Lightweight, file-based relational database.
+* **Sequelize** – ORM (Object-Relational Mapping) for database management.
+* **Security & Authentication:**
+    * **bcrypt** – Industry-standard password hashing.
+    * **JWT (JSON Web Token)** – Secure access and refresh token handling.
+    * **cookie-parser** – Middleware for managing tokens in cookies.
+    * **CORS** – Cross-Origin Resource Sharing configuration.
 
-Projekt składa się z dwóch części (frontend i backend), które wymagają oddzielnej instalacji.
+**Data Source:** Product information is integrated from the external [DummyJSON API](https://dummyjson.com/products).
+
+---
+
+## Setup and Installation
+
+To run the project locally, follow the steps below.
+
+### 1. Clone and Install Dependencies
+The project consists of two separate modules (Frontend and Backend) that require independent installation.
 
 **Frontend:**
-Otwarcie terminala i przejście do folderu aplikacji:
-
 ```bash
 cd src/my-app
 npm install
-```
+
 
 **Backend:**
-W nowym terminalu (lub po przejściu do głównego folderu):
+In a new terminal (or from the root directory):
 
 ```bash
 cd server
 npm install
 ```
 
-### 2. Konfiguracja zmiennych środowiskowych (.env)
+### 2. Environment Variables Configuration (.env)
 
-W katalogu `server` należy stworzyć plik o nazwie `.env` i uzupełnić go według poniższego wzoru:
+In the `server` directory, create a `.env` file and configure it as follows:
 
 ```text
 PORT=3003
-JWT_SECRET=twoje_tajne_haslo_jwt
-REFRESH_TOKEN_SECRET=twoje_tajne_haslo_refresh
+JWT_SECRET=your_jwt_secret
+REFRESH_TOKEN_SECRET=your_refresh_token_secret
 ```
 
-### 3. Uruchomienie projektu
+### 3. Running the Application
 
-Należy uruchomić dwa terminale jednocześnie:
+Launch two terminal windows simultaneously:
 
 **Terminal 1 (Frontend):**
 
@@ -84,14 +80,14 @@ node server.js
 
 ---
 
-# Funkcjonalność
+# Features & Functionality
 
-Strona jest prostym sklepem internetowym. Posiada stronę główną, na której znajduje się m.in. produkt miesiąca, który może ustawiać administrator.
+The application is a functional e-commerce platform. The home page features a "Product of the Month" section, which can be dynamically updated by an administrator.
 
-W sekcji produkty znajduje się lista z filtrowaniem oraz podziałem na kategorie, mamy możliwość dodania produktu w dowolnej ilości do koszyka oraz kliknięcia na szczegóły produktu, w którym pokazant jest opis z dummyjson.com oraz opinie wystawione na stronie. Każdy użytkownik ma możliwość dodania opinii na stronie, jednak tylko jednej na konto. Widoczna jest data opinii oraz ilość gwiazdek.
+The products section includes a list with filtering capabilities and category divisions. Users can add products to their cart in any quantity and access detailed product pages. These details display descriptions fetched from dummyjson.com alongside user reviews posted directly on the platform. Every registered user has the ability to submit a review, limited to one per account. Reviews display both a timestamp and a star rating.
 
-Strona logowania jest prostym lgoowaniem przez mail i hasło. Istnieje popup pozwalający na przypomnienie hasła po wpisaniu maila, jednak nie jest on funkcjonalny. Jeśli nie posiadamy konta, możemy się zarejestrować, tworzy to nowego użytkownika w backendzie. Logowanie obsługuje JWT razem z refresh token.
+Authentication consists of a straightforward email and password login system. There is a UI popup for password recovery, though it is currently non-functional (mockup). Users without an account can register, which securely creates a new user profile in the backend. The login system utilizes JWT (JSON Web Tokens) paired with refresh tokens for secure session management.
 
-Po zalogowaniu można dodawać produkty do koszyka oraz je usuwać, zmieniać ilość lub wyczyścić koszyk. Jeśli złożymy zamówienie, jest ono zapisywane w bazie danych (tak samo jak opinie). Koszyk przelicza się automatycznie.
+Once logged in, users can manage their shopping cart by adding, removing, adjusting quantities, or entirely clearing items. Upon checkout, orders are persisted in the database (similar to the reviews). Cart totals and quantities are calculated dynamically in real-time.
 
-W panelu użytkownika mamy możliwość przeglądania swoich zamówień, wystawionych opinii oraz swoich punktów za zamówienia. Istnieje również możliwość ustawienia swojego nicku na jakikolwiek inny (strona wita nas w ten sposób). Dodatkowo, jeśli użytkownik jest administratorem, to w panelu znajduje się możliwość zmiany produktu miesiąca. Tutaj również znajduje się możliwość zmiany motywu na ciemny.
+The user dashboard allows individuals to track their order history, manage their submitted reviews, and view accumulated loyalty points for previous orders. Users can also personalize their experience by setting a custom nickname, which the application uses for personalized greetings. Additionally, users with administrator privileges have access to specialized tools in the panel, such as removing reviews they deem inappropriate. The dashboard also includes a toggle for a Dark Theme mode.
